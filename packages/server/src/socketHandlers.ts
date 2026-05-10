@@ -34,8 +34,8 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       const room = createRoom(host, settings, queue);
       await saveRoom(room);
 
-      socket.data = { roomCode: room.code, playerId: host.id } as SocketData;
-      socket.join(room.code);
+      socket.data = { roomCode: room.code, playerId: host.id };
+      await socket.join(room.code);
       socket.emit('room:sync', { room, playerId: host.id });
       io.to(room.code).emit('room:update', room);
       await recordRoomEvent(room.id, 'room:create', { hostId: host.id });
@@ -81,8 +81,8 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       }
       await saveRoom(room);
 
-      socket.data = { roomCode: room.code, playerId: player.id } as SocketData;
-      socket.join(room.code);
+      socket.data = { roomCode: room.code, playerId: player.id };
+      await socket.join(room.code);
       socket.emit(existing ? 'reconnect:sync' : 'room:sync', {
         room,
         playerId: player.id
@@ -91,8 +91,8 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       await recordRoomEvent(room.id, 'room:join', { playerId: player.id });
     });
 
-    socket.on('room:leave', async () => {
-      await handleDisconnect(socket, io, true);
+    socket.on('room:leave', () => {
+      void handleDisconnect(socket, io, true);
     });
 
     socket.on('room:ready', async ({ playerId, isReady }) => {
@@ -204,13 +204,13 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       await handleAdminAction(socket, io, payload, 'ban');
     });
 
-    socket.on('disconnect', async () => {
-      await handleDisconnect(socket, io, false);
+    socket.on('disconnect', () => {
+      void handleDisconnect(socket, io, false);
     });
   });
 }
 
-async function getRoomFromSocket(socket: YapziSocket) {
+function getRoomFromSocket(socket: YapziSocket) {
   const roomCode = socket.data.roomCode;
   if (!roomCode) return null;
   return getRoom(roomCode);

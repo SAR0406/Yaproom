@@ -32,10 +32,10 @@ export function createGameSession(
     phases,
     round,
     queue,
-    scoreboard: room.players.reduce((acc, player) => {
+    scoreboard: room.players.reduce<Record<string, number>>((acc, player) => {
       acc[player.id] = player.score;
       return acc;
-    }, {} as Record<string, number>),
+    }, {}),
     chaosEvents: []
   };
 }

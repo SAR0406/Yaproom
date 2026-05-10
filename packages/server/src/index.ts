@@ -11,7 +11,7 @@ await app.register(cors, {
   origin: config.clientOrigin
 });
 
-app.get('/health', async () => ({ status: 'ok' }));
+app.get('/health', () => ({ status: 'ok' }));
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(app.server, {
   cors: { origin: config.clientOrigin }
@@ -28,4 +28,4 @@ const start = async () => {
   }
 };
 
-start();
+void start();

@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test -w server && npm run test -w shared",
-    "dev": "npm run build -w shared && concurrently -n web,server -c cyan,magenta \"npm run dev -w web\" \"npm run dev -w server\"",
-    "dev:web": "npm run dev -w web",
-    "dev:server": "npm run dev -w server",
-    "build": "npm run build -w shared && npm run build -w server && npm run build -w web",
-    "lint": "npm run lint -w web && npm run lint -w server && npm run lint -w shared"
+    "test": "npm run test -w @yapzi/server && npm run test -w @yapzi/shared",
+    "dev": "npm run build -w @yapzi/shared && concurrently -n web,server -c cyan,magenta \"npm run dev -w @yapzi/web\" \"npm run dev -w @yapzi/server\"",
+    "dev:web": "npm run dev -w @yapzi/web",
+    "dev:server": "npm run dev -w @yapzi/server",
+    "build": "npm run build -w @yapzi/shared && npm run build -w @yapzi/server && npm run build -w @yapzi/web",
+    "lint": "npm run lint -w @yapzi/web && npm run lint -w @yapzi/server && npm run lint -w @yapzi/shared"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,8 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
     "@vitest/coverage-v8": "^4.1.5",
