@@ -1,0 +1,40 @@
+{
+  "name": "@yapzi/root",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test -w server && npm run test -w shared",
+    "dev": "npm run build -w shared && concurrently -n web,server -c cyan,magenta \"npm run dev -w web\" \"npm run dev -w server\"",
+    "dev:web": "npm run dev -w web",
+    "dev:server": "npm run dev -w server",
+    "build": "npm run build -w shared && npm run build -w server && npm run build -w web",
+    "lint": "npm run lint -w web && npm run lint -w server && npm run lint -w shared"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SAR0406/Yaproom.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SAR0406/Yaproom/issues"
+  },
+  "homepage": "https://github.com/SAR0406/Yaproom#readme",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
+    "@vitest/coverage-v8": "^4.1.5",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
+}

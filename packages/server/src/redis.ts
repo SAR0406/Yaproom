@@ -1,0 +1,7 @@
+import Redis from 'ioredis';
+import { config } from './config';
+
+export const redis = new Redis(config.redisUrl ?? undefined, {
+  maxRetriesPerRequest: 2,
+  enableReadyCheck: false
+});
