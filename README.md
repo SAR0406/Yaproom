@@ -50,7 +50,13 @@ APP_ENCRYPTION_KEY=<32-byte-base64-key>
 BLOCKED_TERMS=slur,hateword,kys,nazi
 ```
 
-For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` if needed.
+`CLIENT_ORIGIN` accepts one or more comma-separated frontend origins (e.g. `https://app.vercel.app,https://app-git-preview.vercel.app`) and normalizes trailing slashes.
+
+For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` (or Vercel env vars):
+
+```
+NEXT_PUBLIC_SOCKET_URL=https://your-backend.onrender.com
+```
 
 ## Deployment
 
