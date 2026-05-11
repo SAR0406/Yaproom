@@ -44,7 +44,7 @@ export default function Home() {
         >
           Join fast. Roast faster.
         </motion.h1>
-        <p className="mx-auto max-w-2xl text-base text-white/80 md:text-lg">
+        <p className="mx-auto max-w-2xl text-base text-white md:text-lg">
           Build your room, invite your friends, and jump into loud games with a
           crisp lobby experience.
         </p>
