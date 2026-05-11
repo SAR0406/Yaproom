@@ -19,7 +19,10 @@ CREATE TABLE IF NOT EXISTS rooms (
   host_session_id UUID REFERENCES guest_sessions(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL,
   status TEXT NOT NULL,
-  settings JSONB NOT NULL DEFAULT '{}'::jsonb
+  settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+  CONSTRAINT chk_rooms_single_host_ref CHECK (
+    ((host_user_id IS NOT NULL)::int + (host_session_id IS NOT NULL)::int) = 1
+  )
 );
 
 CREATE TABLE IF NOT EXISTS room_members (
@@ -128,7 +131,7 @@ CREATE TABLE IF NOT EXISTS clip_exports (
 
 CREATE TABLE IF NOT EXISTS room_events (
   id BIGSERIAL PRIMARY KEY,
-  room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+  room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
   type TEXT NOT NULL,
   payload JSONB NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

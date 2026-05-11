@@ -39,7 +39,7 @@ const confessionPrompts = [
   'Share one thing your friends would never guess.'
 ];
 
-const chaosCatalog: Array<Pick<ChaosEvent, 'type' | 'label' | 'description'>> = [
+const chaosCatalog: ReadonlyArray<Pick<ChaosEvent, 'type' | 'label' | 'description'>> = [
   { type: 'screen_shake', label: 'Aura Surge', description: 'The room shakes for dramatic effect.' },
   { type: 'fake_ping', label: 'Fake Ping', description: 'Everyone gets baited by a fake alert.' },
   { type: 'bonus_round', label: 'Bonus Energy', description: 'Current round grants bonus points.' },
@@ -124,7 +124,8 @@ function createRound(
 
   if (mode === 'imposter') {
     const [commonWord, imposterWord] = pickRandom(imposterWordPairs);
-    const imposter = room.players[number % Math.max(room.players.length, 1)]?.id ?? room.hostId;
+    const playerIds = room.players.map((player) => player.id);
+    const imposter = playerIds.length ? pickRandom(playerIds) : room.hostId;
     round.payload = {
       commonWord,
       imposterWord,
@@ -135,7 +136,9 @@ function createRound(
 
   if (mode === 'drawing') {
     round.payload = {
-      drawerId: room.players[number % Math.max(room.players.length, 1)]?.id ?? room.hostId,
+      drawerId: room.players.length
+        ? room.players[number % room.players.length]?.id ?? room.hostId
+        : room.hostId,
       guesses: [],
       drawPaths: []
     };
@@ -174,8 +177,12 @@ function selectPrompt(mode: GameMode): string {
 }
 
 function pickSplitPair(room: RoomState): [string, string] {
-  const [first, second] = room.players;
-  return [first?.id ?? room.hostId, second?.id ?? room.hostId];
+  if (room.players.length < 2) {
+    return [room.hostId, room.hostId];
+  }
+  const first = room.players[0]?.id ?? room.hostId;
+  const second = room.players[1]?.id ?? room.hostId;
+  return [first, second];
 }
 
 function scoreRound(room: RoomState, round: RoundState): void {
@@ -199,7 +206,7 @@ function scoreRound(room: RoomState, round: RoundState): void {
   if (round.mode === 'drawing') {
     const guesses = (round.payload?.guesses as GuessSubmitPayload[] | undefined) ?? [];
     const prompt = (round.prompt ?? '').toLowerCase();
-    const firstCorrect = guesses.find((guess) => guess.guess.toLowerCase().includes(prompt));
+    const firstCorrect = guesses.find((guess) => guess.guess.toLowerCase().trim() === prompt.trim());
     if (firstCorrect) {
       applyScore(room, firstCorrect.playerId, 3);
       const drawerId = readString(round.payload?.drawerId);
@@ -294,14 +301,25 @@ function maybeTriggerChaosEvent(room: RoomState, nextPhase: GamePhase) {
   room.game.chaosEvents = [...room.game.chaosEvents.slice(-4), chaos];
 }
 
+const CHAOS_PROBABILITY: Record<ChaosLevel, number> = {
+  low: 0.08,
+  medium: 0.16,
+  high: 0.28
+};
+
 function chaosProbability(level: ChaosLevel): number {
-  if (level === 'low') return 0.08;
-  if (level === 'high') return 0.28;
-  return 0.16;
+  return CHAOS_PROBABILITY[level];
 }
 
 function pickRandom<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)] ?? items[0];
+  if (!items.length) {
+    throw new Error('Cannot pick a random value from an empty collection.');
+  }
+  const value = items[Math.floor(Math.random() * items.length)];
+  if (typeof value === 'undefined') {
+    throw new Error('Failed to select a random item.');
+  }
+  return value;
 }
 
 function readString(value: unknown): string {

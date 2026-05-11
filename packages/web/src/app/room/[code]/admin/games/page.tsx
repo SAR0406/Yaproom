@@ -24,7 +24,7 @@ export default function GameSelectionPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => updateQueue([...allModes].sort(() => Math.random() - 0.5))}
+              onClick={() => updateQueue(shuffleModes(allModes))}
             >
               Randomize all modes
             </Button>
@@ -44,8 +44,8 @@ export default function GameSelectionPage() {
                     size="sm"
                     variant="secondary"
                     onClick={() => {
-                      const queue = [...room.queue];
                       if (index === 0) return;
+                      const queue = [...room.queue];
                       [queue[index - 1], queue[index]] = [queue[index], queue[index - 1]];
                       updateQueue(queue);
                     }}
@@ -56,8 +56,8 @@ export default function GameSelectionPage() {
                     size="sm"
                     variant="secondary"
                     onClick={() => {
+                      if (index === room.queue.length - 1) return;
                       const queue = [...room.queue];
-                      if (index === queue.length - 1) return;
                       [queue[index + 1], queue[index]] = [queue[index], queue[index + 1]];
                       updateQueue(queue);
                     }}
@@ -75,4 +75,13 @@ export default function GameSelectionPage() {
       )}
     </RoomLayout>
   );
+}
+
+function shuffleModes(modes: GameMode[]): GameMode[] {
+  const next = [...modes];
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
 }

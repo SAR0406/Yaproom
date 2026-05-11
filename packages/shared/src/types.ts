@@ -111,6 +111,7 @@ export interface ErrorPayload {
     | 'GAME_IN_PROGRESS'
     | 'PLAYER_KICKED'
     | 'PLAYER_BANNED'
+    | 'INSUFFICIENT_PLAYERS'
     | 'UNKNOWN';
   message: string;
 }

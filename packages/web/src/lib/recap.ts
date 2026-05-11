@@ -26,5 +26,12 @@ export function buildRecap(room: RoomState): { summary: string; roast: string } 
 }
 
 function pickRandom<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)] ?? items[0];
+  if (!items.length) {
+    throw new Error('Cannot pick a random value from an empty collection.');
+  }
+  const value = items[Math.floor(Math.random() * items.length)];
+  if (typeof value === 'undefined') {
+    throw new Error('Failed to select a recap line.');
+  }
+  return value;
 }

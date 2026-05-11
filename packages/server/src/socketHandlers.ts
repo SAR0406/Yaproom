@@ -22,6 +22,12 @@ const supportedModes: Set<GameMode> = new Set([
   'split'
 ]);
 
+const MAX_NICKNAME_LENGTH = 24;
+const MIN_MAX_PLAYERS = 2;
+const MAX_MAX_PLAYERS = 20;
+const MIN_ROUND_LENGTH_SEC = 15;
+const MAX_ROUND_LENGTH_SEC = 180;
+
 export type YapziSocket = Socket<
   ClientToServerEvents,
   ServerToClientEvents,
@@ -87,7 +93,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
             ...existing,
             nickname: sanitizeNickname(payload.nickname),
             isConnected: true,
-            isBanned: false,
+            isBanned: room.bannedPlayerIds.includes(existing.id),
             lastActiveAt: new Date().toISOString()
           }
         : createPlayer(sanitizeNickname(payload.nickname), false, {
@@ -162,6 +168,13 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       const room = await getRoomFromSocket(socket);
       if (!room || room.hostId !== socket.data.playerId) return;
       if (!supportedModes.has(mode)) return;
+      if (mode === 'split' && room.players.length < 2) {
+        socket.emit('room:error', {
+          code: 'INSUFFICIENT_PLAYERS',
+          message: 'Split mode needs at least 2 players.'
+        });
+        return;
+      }
       room.status = 'in_game';
       room.game = createGameSession(mode, room.queue ?? [], room);
       await saveRoom(room);
@@ -359,7 +372,7 @@ async function handleDisconnect(
 }
 
 function sanitizeNickname(value: string): string {
-  const trimmed = value.trim().slice(0, 24);
+  const trimmed = value.trim().slice(0, MAX_NICKNAME_LENGTH);
   return trimmed || 'Player';
 }
 
@@ -370,8 +383,8 @@ function sanitizeRoomCode(code: string): string {
 function sanitizeSettings(settings: RoomSettings): RoomSettings {
   return {
     ...settings,
-    maxPlayers: clamp(settings.maxPlayers, 2, 20),
-    roundLengthSec: clamp(settings.roundLengthSec, 15, 180)
+    maxPlayers: clamp(settings.maxPlayers, MIN_MAX_PLAYERS, MAX_MAX_PLAYERS),
+    roundLengthSec: clamp(settings.roundLengthSec, MIN_ROUND_LENGTH_SEC, MAX_ROUND_LENGTH_SEC)
   };
 }
 

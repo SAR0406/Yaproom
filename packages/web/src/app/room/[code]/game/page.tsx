@@ -20,6 +20,16 @@ import {
 } from '@/lib/roomActions';
 import { describePhase, gameModeLabels } from '@/lib/gameEngine';
 
+const CANVAS_WIDTH = 300;
+const CANVAS_HEIGHT = 200;
+
+interface RoundPayload {
+  imposterId?: string;
+  imposterWord?: string;
+  commonWord?: string;
+  pair?: [string, string];
+}
+
 export default function GamePage() {
   const playerId = useRoomStore((state) => state.playerId);
   const [guessText, setGuessText] = useState('');
@@ -39,13 +49,16 @@ export default function GamePage() {
 
         const phase = room.game.round.phase;
         const isHost = room.players.find((p) => p.id === playerId)?.isHost;
-        const payload = (room.game.round.payload ?? {}) as Record<string, unknown>;
+        const payload = (room.game.round.payload ?? {}) as RoundPayload;
         const imposterId = String(payload.imposterId ?? '');
         const myWord = imposterId && playerId === imposterId ? payload.imposterWord : payload.commonWord;
         const splitPair = (payload.pair as [string, string] | undefined) ?? ['', ''];
         const inSplitPair = splitPair.includes(playerId ?? '');
 
-        const started = room.game?.round.startedAt ? Date.parse(room.game.round.startedAt) : Date.now();
+        const parsedStartedAt = room.game?.round.startedAt
+          ? Date.parse(room.game.round.startedAt)
+          : Date.now();
+        const started = Number.isNaN(parsedStartedAt) ? Date.now() : parsedStartedAt;
         const elapsed = Math.max(0, (Date.now() - started) / 1000);
         const duration = room.settings.roundLengthSec;
         const progress = Math.max(0, Math.min(100, 100 - (elapsed / duration) * 100));
@@ -125,8 +138,8 @@ export default function GamePage() {
                       sendDrawPath({
                         playerId,
                         path: [
-                          { x: Math.random() * 300, y: Math.random() * 200 },
-                          { x: Math.random() * 300, y: Math.random() * 200 }
+                          { x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT },
+                          { x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT }
                         ]
                       })
                     }
