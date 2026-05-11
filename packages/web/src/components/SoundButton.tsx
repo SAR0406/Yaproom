@@ -40,62 +40,70 @@ export function SoundButton({
   );
 
   const playSound = async () => {
-    if (typeof window === "undefined") return;
-    const AudioContextCtor =
-      window.AudioContext ??
-      (window as Window & { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext;
-    if (!AudioContextCtor) return;
+    try {
+      if (typeof window === "undefined") return;
+      const AudioContextCtor =
+        window.AudioContext ??
+        (window as Window & { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (!AudioContextCtor) return;
 
-    const context = contextRef.current ?? new AudioContextCtor();
-    contextRef.current = context;
-    if (context.state === "suspended") {
-      await context.resume();
+      if (!contextRef.current || contextRef.current.state === "closed") {
+        contextRef.current = new AudioContextCtor();
+      }
+      const context = contextRef.current;
+      if (!context) return;
+
+      if (context.state === "suspended") {
+        await context.resume();
+      }
+
+      const config = SOUND_PROFILES[profile];
+      const now = context.currentTime;
+      const master = context.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
+      master.connect(context.destination);
+
+      const oscillator = context.createOscillator();
+      oscillator.type = config.osc;
+      oscillator.frequency.setValueAtTime(config.start, now);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        Math.max(config.end, MIN_FREQUENCY),
+        now + config.duration
+      );
+      oscillator.connect(master);
+
+      const noise = context.createBufferSource();
+      const noiseBuffer = context.createBuffer(
+        1,
+        context.sampleRate * config.duration,
+        context.sampleRate
+      );
+      const channel = noiseBuffer.getChannelData(0);
+      for (let sample = 0; sample < channel.length; sample += 1) {
+        channel[sample] = (Math.random() * 2 - 1) * NOISE_AMPLITUDE;
+      }
+      noise.buffer = noiseBuffer;
+
+      const noiseFilter = context.createBiquadFilter();
+      noiseFilter.type = "highpass";
+      noiseFilter.frequency.value = 900;
+      const noiseGain = context.createGain();
+      noiseGain.gain.value = config.noiseGain;
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(master);
+
+      oscillator.start(now);
+      noise.start(now);
+      oscillator.stop(now + config.duration);
+      noise.stop(now + config.duration);
+    } catch {
+      // ignore audio playback errors in unsupported/restricted environments
     }
-
-    const config = SOUND_PROFILES[profile];
-    const now = context.currentTime;
-    const master = context.createGain();
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
-    master.connect(context.destination);
-
-    const oscillator = context.createOscillator();
-    oscillator.type = config.osc;
-    oscillator.frequency.setValueAtTime(config.start, now);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      Math.max(config.end, MIN_FREQUENCY),
-      now + config.duration
-    );
-    oscillator.connect(master);
-
-    const noise = context.createBufferSource();
-    const noiseBuffer = context.createBuffer(
-      1,
-      context.sampleRate * config.duration,
-      context.sampleRate
-    );
-    const channel = noiseBuffer.getChannelData(0);
-    for (let sample = 0; sample < channel.length; sample += 1) {
-      channel[sample] = (Math.random() * 2 - 1) * NOISE_AMPLITUDE;
-    }
-    noise.buffer = noiseBuffer;
-
-    const noiseFilter = context.createBiquadFilter();
-    noiseFilter.type = "highpass";
-    noiseFilter.frequency.value = 900;
-    const noiseGain = context.createGain();
-    noiseGain.gain.value = config.noiseGain;
-
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(master);
-
-    oscillator.start(now);
-    noise.start(now);
-    oscillator.stop(now + config.duration);
-    noise.stop(now + config.duration);
   };
 
   return (

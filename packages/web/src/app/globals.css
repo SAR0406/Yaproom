@@ -64,14 +64,6 @@
     border-radius: 20px;
   }
 
-  .brutal-card {
-    @apply rounded-3xl border-[3px] border-black bg-surface text-black shadow-[8px_8px_0_0_#000];
-  }
-
-  .brutal-card-dark {
-    @apply rounded-3xl border-[3px] border-black bg-surface-muted text-black shadow-[8px_8px_0_0_#000];
-  }
-
   .brutal-input {
     @apply rounded-2xl border-[3px] border-black bg-white px-4 py-3 text-black placeholder:text-black/50 shadow-[4px_4px_0_0_#000] transition-transform focus:-translate-y-0.5 focus:outline-none;
   }
