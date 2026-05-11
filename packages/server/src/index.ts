@@ -34,6 +34,7 @@ app.addHook('onSend', async (_request, reply) => {
 });
 
 app.get('/health', () => ({ status: 'ok' }));
+app.get('/', () => ({ status: 'ok', service: 'yaproom-server' }));
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(app.server, {
   cors: {

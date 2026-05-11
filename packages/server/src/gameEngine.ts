@@ -191,15 +191,15 @@ function scoreRound(room: RoomState, round: RoundState): void {
   if (round.mode === 'imposter') {
     const votes = (round.payload?.votes as VoteSubmitPayload[] | undefined) ?? [];
     const imposterId = readString(round.payload?.imposterId);
-    const votesForImposter = votes.filter((vote) => vote.targetId === imposterId).length;
-    const votedOut = votesForImposter > Math.floor(Math.max(votes.length, 1) / 2);
+    const votedTargetId = resolveTopVotedTarget(votes);
+    const votedOut = Boolean(votedTargetId && imposterId && votedTargetId === imposterId);
 
     if (votedOut) {
       for (const player of room.players) {
         if (player.id !== imposterId) applyScore(room, player.id, 2);
       }
     } else if (imposterId) {
-      applyScore(room, imposterId, 4);
+      applyScore(room, imposterId, 3);
     }
   }
 
@@ -324,4 +324,33 @@ function pickRandom<T>(items: readonly T[]): T {
 
 function readString(value: unknown): string {
   return typeof value === 'string' ? value : '';
+}
+
+function resolveTopVotedTarget(votes: VoteSubmitPayload[]): string | null {
+  if (!votes.length) {
+    return null;
+  }
+
+  const tally = new Map<string, number>();
+  for (const vote of votes) {
+    tally.set(vote.targetId, (tally.get(vote.targetId) ?? 0) + 1);
+  }
+
+  let topTarget: string | null = null;
+  let topCount = 0;
+  let isTie = false;
+
+  for (const [targetId, count] of tally.entries()) {
+    if (count > topCount) {
+      topTarget = targetId;
+      topCount = count;
+      isTie = false;
+      continue;
+    }
+    if (count === topCount) {
+      isTie = true;
+    }
+  }
+
+  return isTie ? null : topTarget;
 }

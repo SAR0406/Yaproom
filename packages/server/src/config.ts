@@ -50,7 +50,7 @@ export const config = {
 
 export function isAllowedClientOrigin(origin: string | undefined): boolean {
   if (!origin) {
-    return false;
+    return true;
   }
   const normalized = normalizeOrigin(origin);
   if (!normalized) {

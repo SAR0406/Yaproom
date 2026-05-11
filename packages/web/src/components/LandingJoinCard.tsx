@@ -7,16 +7,19 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { joinRoom } from "@/lib/roomActions";
+import { normalizeRoomCode } from "@/lib/roomCode";
+import { NICKNAME_MAX_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constraints";
 
 export function LandingJoinCard() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [code, setCode] = useState("");
+  const normalizedCode = normalizeRoomCode(code);
 
   const handleJoin = () => {
-    if (!nickname || !code) return;
-    joinRoom({ code: code.toUpperCase(), nickname });
-    router.push(`/room/${code.toUpperCase()}`);
+    if (!nickname.trim() || normalizedCode.length !== ROOM_CODE_LENGTH) return;
+    joinRoom({ code: normalizedCode, nickname: nickname.trim() });
+    router.push(`/room/${normalizedCode}?name=${encodeURIComponent(nickname.trim())}`);
   };
 
   return (
@@ -34,13 +37,14 @@ export function LandingJoinCard() {
             label="Nickname"
             placeholder="yap legend"
             value={nickname}
+            maxLength={NICKNAME_MAX_LENGTH}
             onChange={(event) => setNickname(event.target.value)}
           />
           <Input
             label="Room code"
             placeholder="ABCD"
-            value={code}
-            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            value={normalizedCode}
+            onChange={(event) => setCode(normalizeRoomCode(event.target.value))}
           />
         </div>
         <Button onClick={handleJoin}>Join the chaos</Button>
