@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { config } from './config';
+import { config } from './config.js';
 
 const redisUrl = config.redisUrl ?? 'redis://127.0.0.1:6379';
 
