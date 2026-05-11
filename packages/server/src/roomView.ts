@@ -16,7 +16,7 @@ export function createRoomViewForPlayer(room: RoomState, playerId?: string | nul
   const payload = sanitizeRoundPayload(
     round.mode,
     round.phase,
-    round.payload as Record<string, unknown> | undefined,
+    round.payload,
     playerId ?? undefined
   );
 
