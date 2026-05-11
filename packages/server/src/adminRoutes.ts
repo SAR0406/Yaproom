@@ -2,10 +2,10 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { Server } from 'socket.io';
 import type { ClientToServerEvents, RoomState, ServerToClientEvents } from '@yapzi/shared';
 import { z } from 'zod';
-import { getRoom, listRooms, removeRoom, saveRoom } from './roomStore';
-import { parseBasicAuth, verifyAdminCredentials } from './security';
-import { recordRoomEvent } from './db';
-import { assertSafeText } from './contentSafety';
+import { getRoom, listRooms, removeRoom, saveRoom } from './roomStore.js';
+import { parseBasicAuth, verifyAdminCredentials } from './security.js';
+import { recordRoomEvent } from './db.js';
+import { assertSafeText } from './contentSafety.js';
 
 const codeParamsSchema = z.object({ code: z.string().min(1) });
 
