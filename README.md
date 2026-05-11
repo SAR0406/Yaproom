@@ -48,9 +48,27 @@ ADMIN_USERNAME=Frontman
 ADMIN_PASSWORD_HASH=scrypt:<salt-hex>:<hash-hex>
 APP_ENCRYPTION_KEY=<32-byte-base64-key>
 BLOCKED_TERMS=slur,hateword,kys,nazi
+NVIDIA_API_KEY=<your-nvidia-nim-key>
+NVIDIA_NIM_URL=https://integrate.api.nvidia.com/v1/chat/completions
+NVIDIA_NIM_MODEL=moonshotai/kimi-k2.6
 ```
 
-For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` if needed.
+`CLIENT_ORIGIN` accepts one or more comma-separated frontend origins (e.g. `https://app.vercel.app,https://app-git-preview.vercel.app`) and normalizes trailing slashes.
+
+For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` (or Vercel env vars):
+
+```
+NEXT_PUBLIC_SOCKET_URL=https://your-backend.onrender.com
+```
+
+## AI endpoints (NVIDIA NIM + fallback)
+
+Backend exposes:
+
+- `POST /api/ai/recap` → short room recap + roast summary
+- `POST /api/ai/prompts` → truth/dare/roast/icebreaker prompts
+
+If `NVIDIA_API_KEY` is missing or NIM fails, responses automatically fall back to local safe templates so gameplay is never blocked.
 
 ## Deployment
 

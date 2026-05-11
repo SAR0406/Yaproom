@@ -19,8 +19,11 @@ export default function RootLayout({
       className="h-full antialiased"
       style={
         {
-          '--font-inter': 'Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-          '--font-sora': 'Sora, Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
+          '--font-bebas-neue': '"Bebas Neue", Impact, "Arial Narrow", sans-serif',
+          '--font-dm-sans':
+            '"DM Sans", Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+          '--font-jetbrains-mono':
+            '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
         } as CSSProperties
       }
     >
