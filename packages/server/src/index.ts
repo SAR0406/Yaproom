@@ -2,7 +2,7 @@ import fastify from 'fastify';
 import cors from '@fastify/cors';
 import { Server } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@yapzi/shared';
-import { config } from './config';
+import { config } from './config.js';
 import { registerSocketHandlers } from './socketHandlers';
 import { registerAdminRoutes } from './adminRoutes';
 
