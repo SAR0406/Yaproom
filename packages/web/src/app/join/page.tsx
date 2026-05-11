@@ -14,18 +14,22 @@ export default function JoinPage() {
   const error = useRoomStore((state) => state.error);
   const [nickname, setNickname] = useState("");
   const [code, setCode] = useState("");
+  const normalizedCode = code.trim().toUpperCase().slice(0, 4);
+  const canJoin = Boolean(nickname.trim()) && normalizedCode.length === 4;
 
   const handleJoin = () => {
-    if (!nickname || !code) return;
-    joinRoom({ code: code.toUpperCase(), nickname });
-    router.push(`/room/${code.toUpperCase()}`);
+    if (!canJoin) return;
+    joinRoom({ code: normalizedCode, nickname: nickname.trim() });
+    router.push(
+      `/room/${normalizedCode}?name=${encodeURIComponent(nickname.trim())}`
+    );
   };
 
   return (
     <PageLayout>
       <Card className="max-w-xl">
-        <h1 className="text-3xl font-bold text-foreground">Join a room</h1>
-        <p className="mt-2 text-sm text-muted">
+        <h1 className="text-3xl font-black uppercase text-black">Join a room</h1>
+        <p className="mt-2 text-sm font-semibold text-black/80">
           Drop your nickname and room code. That&apos;s it.
         </p>
         <div className="mt-6 grid gap-4">
@@ -38,13 +42,20 @@ export default function JoinPage() {
           <Input
             label="Room code"
             placeholder="ABCD"
-            value={code}
-            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            value={normalizedCode}
+            maxLength={4}
+            onChange={(event) =>
+              setCode(
+                event.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
+              )
+            }
           />
           {error ? (
-            <p className="text-sm text-danger">{error.message}</p>
+            <p className="rounded-xl border-[2px] border-black bg-red-300 px-3 py-2 text-sm font-semibold text-black">
+              {error.message}
+            </p>
           ) : null}
-          <Button onClick={handleJoin}>Enter room</Button>
+          <Button disabled={!canJoin} onClick={handleJoin}>Enter room</Button>
         </div>
       </Card>
     </PageLayout>
