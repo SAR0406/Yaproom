@@ -18,7 +18,7 @@ export function RoomLayout({
 }) {
   const roomInStore = useRoomStore((state) => state.room);
   const params = useParams();
-  const code = normalizeRoomCode((params.code as string) ?? "");
+  const code = normalizeRoomCode(String(params.code ?? ""));
 
   useEffect(() => {
     if (roomInStore || !code) return;

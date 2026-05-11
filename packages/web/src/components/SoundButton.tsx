@@ -68,8 +68,8 @@ export function SoundButton({
       context.sampleRate
     );
     const channel = noiseBuffer.getChannelData(0);
-    for (let index = 0; index < channel.length; index += 1) {
-      channel[index] = (Math.random() * 2 - 1) * NOISE_AMPLITUDE;
+    for (let sample = 0; sample < channel.length; sample += 1) {
+      channel[sample] = (Math.random() * 2 - 1) * NOISE_AMPLITUDE;
     }
     noise.buffer = noiseBuffer;
 

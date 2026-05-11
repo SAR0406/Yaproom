@@ -80,7 +80,7 @@ export default function Home() {
               placeholder="ABCD"
               value={normalizedCode}
               maxLength={4}
-                onChange={(event) =>
+              onChange={(event) =>
                 setRoomCode(normalizeRoomCode(event.target.value))
               }
             />
