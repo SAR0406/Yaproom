@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { config } from './config';
+import { encryptForStorage } from './security';
 
 const pool = config.databaseUrl
   ? new Pool({ connectionString: config.databaseUrl })
@@ -14,7 +15,7 @@ export async function recordRoomEvent(
   try {
     await pool.query(
       'INSERT INTO room_events (room_id, type, payload) VALUES ($1, $2, $3)',
-      [roomId, type, payload]
+      [roomId, type, encryptForStorage(payload)]
     );
   } catch (error) {
     console.warn('Failed to record room event', error);

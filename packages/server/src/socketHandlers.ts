@@ -1,6 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { Server, Socket } from 'socket.io';
 import type {
   AdminActionPayload,
+  ChatMessage,
+  ChatSendPayload,
   ClientToServerEvents,
   GameMode,
   RoomCreatePayload,
@@ -13,6 +16,12 @@ import { createGameSession, advancePhase } from './gameEngine';
 import { recordRoomEvent } from './db';
 import { createPlayer, createRoom, defaultQueue, defaultSettings } from './roomUtils';
 import { getRoom, removeRoom, saveRoom } from './roomStore';
+import {
+  assertSafeText,
+  hasAbusiveLanguage,
+  sanitizeEmojiReaction,
+  sanitizeMemeUrl
+} from './contentSafety';
 
 const supportedModes: Set<GameMode> = new Set([
   'imposter',
@@ -27,6 +36,9 @@ const MIN_MAX_PLAYERS = 2;
 const MAX_MAX_PLAYERS = 20;
 const MIN_ROUND_LENGTH_SEC = 15;
 const MAX_ROUND_LENGTH_SEC = 180;
+const MAX_CHAT_FEED_ITEMS = 100;
+
+const rateLimitBuckets = new Map<string, number[]>();
 
 export type YapziSocket = Socket<
   ClientToServerEvents,
@@ -43,9 +55,15 @@ interface SocketData {
 export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerToClientEvents>) {
   io.on('connection', (socket: YapziSocket) => {
     socket.on('room:create', async (payload: RoomCreatePayload) => {
+      const nickname = sanitizeNickname(payload.nickname);
+      if (hasAbusiveLanguage(nickname)) {
+        emitRoomError(socket, 'ABUSIVE_LANGUAGE', 'Nickname contains blocked language.');
+        return;
+      }
+
       const settings = sanitizeSettings(payload.settings ?? defaultSettings);
       const queue = sanitizeQueue(payload.queue);
-      const host = createPlayer(sanitizeNickname(payload.nickname), true);
+      const host = createPlayer(nickname, true);
       const room = createRoom(host, settings, queue);
       await saveRoom(room);
 
@@ -59,18 +77,22 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     socket.on('room:join', async (payload: RoomJoinPayload) => {
       const room = await getRoom(sanitizeRoomCode(payload.code));
       if (!room) {
-        socket.emit('room:error', { code: 'INVALID_CODE', message: 'Room not found.' });
+        emitRoomError(socket, 'INVALID_CODE', 'Room not found.');
         return;
       }
+
+      const nickname = sanitizeNickname(payload.nickname);
+      if (hasAbusiveLanguage(nickname)) {
+        emitRoomError(socket, 'ABUSIVE_LANGUAGE', 'Nickname contains blocked language.');
+        return;
+      }
+
       if (room.status === 'locked') {
-        socket.emit('room:error', { code: 'ROOM_LOCKED', message: 'Room is locked.' });
+        emitRoomError(socket, 'ROOM_LOCKED', 'Room is locked.');
         return;
       }
       if (room.status === 'in_game' && !room.settings.allowLateJoin) {
-        socket.emit('room:error', {
-          code: 'GAME_IN_PROGRESS',
-          message: 'Game already started. Late join is disabled.'
-        });
+        emitRoomError(socket, 'GAME_IN_PROGRESS', 'Game already started. Late join is disabled.');
         return;
       }
 
@@ -79,24 +101,24 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
         : undefined;
 
       if (payload.playerId && room.bannedPlayerIds.includes(payload.playerId)) {
-        socket.emit('room:error', { code: 'PLAYER_BANNED', message: 'You were banned.' });
+        emitRoomError(socket, 'PLAYER_BANNED', 'You were banned.');
         return;
       }
 
       if (!existing && room.players.length >= room.settings.maxPlayers) {
-        socket.emit('room:error', { code: 'ROOM_FULL', message: 'Room is full.' });
+        emitRoomError(socket, 'ROOM_FULL', 'Room is full.');
         return;
       }
 
       const player = existing
         ? {
             ...existing,
-            nickname: sanitizeNickname(payload.nickname),
+            nickname,
             isConnected: true,
             isBanned: room.bannedPlayerIds.includes(existing.id),
             lastActiveAt: new Date().toISOString()
           }
-        : createPlayer(sanitizeNickname(payload.nickname), false, {
+        : createPlayer(nickname, false, {
             id: payload.playerId
           });
 
@@ -169,10 +191,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       if (!room || room.hostId !== socket.data.playerId) return;
       if (!supportedModes.has(mode)) return;
       if (mode === 'split' && room.players.length < 2) {
-        socket.emit('room:error', {
-          code: 'INSUFFICIENT_PLAYERS',
-          message: 'Split mode needs at least 2 players.'
-        });
+        emitRoomError(socket, 'INSUFFICIENT_PLAYERS', 'Split mode needs at least 2 players.');
         return;
       }
       room.status = 'in_game';
@@ -202,9 +221,78 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('reaction:send', async (payload) => {
+      if (!allowByRateLimit(socket, 'reaction:send', 10, 5000)) {
+        emitRoomError(socket, 'RATE_LIMIT', 'Too many reactions sent too quickly.');
+        return;
+      }
+
       const room = await getRoomFromSocket(socket);
       if (!room) return;
-      io.to(room.code).emit('reaction:receive', payload);
+
+      const sender = room.players.find((player) => player.id === payload.playerId);
+      if (!sender || sender.id !== socket.data.playerId || sender.isMuted) {
+        return;
+      }
+
+      const reaction = sanitizeEmojiReaction(payload.reaction);
+      if (!reaction) {
+        emitRoomError(socket, 'ABUSIVE_LANGUAGE', 'Only emoji reactions are allowed.');
+        return;
+      }
+
+      io.to(room.code).emit('reaction:receive', {
+        playerId: payload.playerId,
+        reaction
+      });
+    });
+
+    socket.on('chat:send', async (payload: ChatSendPayload) => {
+      if (!allowByRateLimit(socket, 'chat:send', 6, 8000)) {
+        emitRoomError(socket, 'RATE_LIMIT', 'Slow down chat messages.');
+        return;
+      }
+
+      const room = await getRoomFromSocket(socket);
+      if (!room) return;
+
+      const sender = room.players.find((player) => player.id === payload.playerId);
+      if (!sender || sender.id !== socket.data.playerId) {
+        return;
+      }
+      if (sender.isMuted) {
+        emitRoomError(socket, 'UNKNOWN', 'You are muted by host/admin.');
+        return;
+      }
+
+      const safeText = assertSafeText(payload.text);
+      if (!safeText.ok) {
+        emitRoomError(socket, 'ABUSIVE_LANGUAGE', safeText.message);
+        return;
+      }
+
+      const memeUrl = sanitizeMemeUrl(payload.memeUrl);
+      if (payload.memeUrl && !memeUrl) {
+        emitRoomError(socket, 'UNKNOWN', 'Meme URL must be https and from an allowed provider.');
+        return;
+      }
+
+      const message: ChatMessage = {
+        id: randomUUID(),
+        playerId: sender.id,
+        nickname: sender.nickname,
+        text: payload.text.trim(),
+        memeUrl,
+        createdAt: new Date().toISOString()
+      };
+
+      room.chatFeed = [...room.chatFeed, message].slice(-MAX_CHAT_FEED_ITEMS);
+      await saveRoom(room);
+      io.to(room.code).emit('chat:receive', message);
+      io.to(room.code).emit('room:update', room);
+      await recordRoomEvent(room.id, 'chat:send', {
+        playerId: sender.id,
+        hasMeme: Boolean(memeUrl)
+      });
     });
 
     socket.on('vote:submit', async (payload) => {
@@ -220,8 +308,20 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('guess:submit', async (payload) => {
+      if (!allowByRateLimit(socket, 'guess:submit', 8, 5000)) {
+        emitRoomError(socket, 'RATE_LIMIT', 'Guess submissions are temporarily limited.');
+        return;
+      }
+
       const room = await getRoomFromSocket(socket);
       if (!room?.game || payload.playerId !== socket.data.playerId) return;
+
+      const safe = assertSafeText(payload.guess);
+      if (!safe.ok) {
+        emitRoomError(socket, 'ABUSIVE_LANGUAGE', safe.message);
+        return;
+      }
+
       const key = room.game.mode === 'split' ? 'choices' : 'guesses';
       const current = (room.game.round.payload?.[key] as typeof payload[] | undefined) ?? [];
       room.game.round.payload = {
@@ -233,8 +333,26 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('confession:submit', async (payload) => {
+      if (!allowByRateLimit(socket, 'confession:submit', 4, 8000)) {
+        emitRoomError(socket, 'RATE_LIMIT', 'Confession submissions are temporarily limited.');
+        return;
+      }
+
       const room = await getRoomFromSocket(socket);
       if (!room?.game || payload.playerId !== socket.data.playerId) return;
+
+      const sender = room.players.find((player) => player.id === payload.playerId);
+      if (sender?.isMuted) {
+        emitRoomError(socket, 'UNKNOWN', 'You are muted by host/admin.');
+        return;
+      }
+
+      const safe = assertSafeText(payload.confession);
+      if (!safe.ok) {
+        emitRoomError(socket, 'ABUSIVE_LANGUAGE', safe.message);
+        return;
+      }
+
       const confessions =
         (room.game.round.payload?.confessions as typeof payload[] | undefined) ?? [];
       room.game.round.payload = {
@@ -268,6 +386,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('disconnect', () => {
+      purgeSocketRateLimits(socket.id);
       void handleDisconnect(socket, io, false);
     });
   });
@@ -406,4 +525,38 @@ function assignNextHost(room: RoomState) {
     ...player,
     isHost: player.id === nextHost.id
   }));
+}
+
+function allowByRateLimit(
+  socket: YapziSocket,
+  action: string,
+  maxEvents: number,
+  windowMs: number
+): boolean {
+  const key = `${socket.id}:${action}`;
+  const now = Date.now();
+  const recent = (rateLimitBuckets.get(key) ?? []).filter((stamp) => now - stamp <= windowMs);
+  if (recent.length >= maxEvents) {
+    rateLimitBuckets.set(key, recent);
+    return false;
+  }
+  recent.push(now);
+  rateLimitBuckets.set(key, recent);
+  return true;
+}
+
+function purgeSocketRateLimits(socketId: string) {
+  for (const key of rateLimitBuckets.keys()) {
+    if (key.startsWith(`${socketId}:`)) {
+      rateLimitBuckets.delete(key);
+    }
+  }
+}
+
+function emitRoomError(
+  socket: YapziSocket,
+  code: 'ABUSIVE_LANGUAGE' | 'RATE_LIMIT' | 'UNKNOWN' | 'INVALID_CODE' | 'ROOM_LOCKED' | 'GAME_IN_PROGRESS' | 'PLAYER_BANNED' | 'ROOM_FULL' | 'INSUFFICIENT_PLAYERS',
+  message: string
+) {
+  socket.emit('room:error', { code, message });
 }

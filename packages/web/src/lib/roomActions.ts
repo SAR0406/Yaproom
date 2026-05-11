@@ -9,7 +9,8 @@ import type {
   GuessSubmitPayload,
   ConfessionSubmitPayload,
   DrawPathPayload,
-  RoomStatus
+  RoomStatus,
+  ChatSendPayload
 } from '@yapzi/shared';
 import { getSocket } from '@/lib/socket';
 
@@ -68,6 +69,12 @@ export function nextRound() {
 export function sendReaction(playerId: string, reaction: string) {
   const socket = getSocket();
   socket?.emit('reaction:send', { playerId, reaction });
+}
+
+
+export function sendChat(payload: ChatSendPayload) {
+  const socket = getSocket();
+  socket?.emit('chat:send', payload);
 }
 
 export function submitVote(payload: VoteSubmitPayload) {

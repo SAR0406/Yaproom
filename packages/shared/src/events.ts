@@ -1,4 +1,5 @@
 import type {
+  ChatMessage,
   ErrorPayload,
   GameMode,
   GamePhase,
@@ -73,6 +74,12 @@ export interface ReactionSendPayload {
   reaction: string;
 }
 
+export interface ChatSendPayload {
+  playerId: string;
+  text: string;
+  memeUrl?: string;
+}
+
 export interface AdminActionPayload {
   adminId: string;
   targetId: string;
@@ -94,6 +101,7 @@ export interface ClientToServerEvents {
   'confession:submit': (payload: ConfessionSubmitPayload) => void;
   'draw:path': (payload: DrawPathPayload) => void;
   'reaction:send': (payload: ReactionSendPayload) => void;
+  'chat:send': (payload: ChatSendPayload) => void;
   'admin:kick': (payload: AdminActionPayload) => void;
   'admin:mute': (payload: AdminActionPayload) => void;
   'admin:ban': (payload: AdminActionPayload) => void;
@@ -108,5 +116,6 @@ export interface ServerToClientEvents {
   'game:mode': (mode: GameMode) => void;
   'game:ended': (room: RoomState) => void;
   'reaction:receive': (payload: ReactionSendPayload) => void;
+  'chat:receive': (payload: ChatMessage) => void;
   'reconnect:sync': (payload: RoomSyncPayload) => void;
 }

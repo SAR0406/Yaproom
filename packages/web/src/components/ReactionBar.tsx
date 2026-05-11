@@ -1,7 +1,7 @@
-const reactions = ["🔥", "��", "😱", "💀", "😈", "💜"];
+const reactions = ['🔥', '😂', '😱', '💀', '😈', '💜'];
 
 export function ReactionBar({
-  onReact,
+  onReact
 }: {
   onReact?: (reaction: string) => void;
 }) {

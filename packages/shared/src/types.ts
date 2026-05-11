@@ -48,6 +48,15 @@ export interface PlayerState {
   lastActiveAt: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  playerId: string;
+  nickname: string;
+  text: string;
+  memeUrl: string | null;
+  createdAt: string;
+}
+
 export interface RoundState {
   id: string;
   number: number;
@@ -79,6 +88,7 @@ export interface RoomState {
   queue: GameMode[];
   players: PlayerState[];
   bannedPlayerIds: string[];
+  chatFeed: ChatMessage[];
   game: GameSessionState | null;
 }
 
@@ -112,6 +122,8 @@ export interface ErrorPayload {
     | 'PLAYER_KICKED'
     | 'PLAYER_BANNED'
     | 'INSUFFICIENT_PLAYERS'
+    | 'ABUSIVE_LANGUAGE'
+    | 'RATE_LIMIT'
     | 'UNKNOWN';
   message: string;
 }
