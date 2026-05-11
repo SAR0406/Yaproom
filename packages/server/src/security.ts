@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { FastifyRequest } from 'fastify';
-import { config } from './config';
+import { config } from './config.ts';
 
 const ENCRYPTION_PREFIX = 'enc:v1';
 const SCRYPT_KEYLEN = 64;
