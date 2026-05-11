@@ -16,7 +16,11 @@ function normalizeOrigin(value: string): string | null {
 
 function parseClientOrigins(value: string | undefined): string[] {
   const defaults = ['http://localhost:3000'];
-  const parsed = (value ?? defaults[0])
+  if (!value) {
+    return defaults;
+  }
+
+  const parsed = value
     .split(',')
     .map((item) => normalizeOrigin(item))
     .filter((item): item is string => Boolean(item));
@@ -43,7 +47,7 @@ export const config = {
 
 export function isAllowedClientOrigin(origin: string | undefined): boolean {
   if (!origin) {
-    return true;
+    return false;
   }
   const normalized = normalizeOrigin(origin);
   if (!normalized) {

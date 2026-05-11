@@ -8,7 +8,11 @@ let socket:
 function getSocketUrl() {
   const configured = process.env.NEXT_PUBLIC_SOCKET_URL?.trim();
   if (configured) {
-    return configured.replace(/\/+$/, "");
+    try {
+      return new URL(configured).origin;
+    } catch {
+      return configured;
+    }
   }
 
   if (typeof window !== "undefined") {

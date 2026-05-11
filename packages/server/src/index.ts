@@ -9,8 +9,16 @@ import { registerAdminRoutes } from './adminRoutes.js';         // ✅ FIXED
 
 const app = fastify({ logger: true });
 
+function checkAllowedOrigin(origin: string | undefined, channel: 'http' | 'socket'): boolean {
+  const allowed = isAllowedClientOrigin(origin);
+  if (!allowed) {
+    app.log.warn({ channel, origin }, 'Rejected disallowed client origin');
+  }
+  return allowed;
+}
+
 await app.register(cors, {
-  origin: (origin, cb) => cb(null, isAllowedClientOrigin(origin)),
+  origin: (origin, cb) => cb(null, checkAllowedOrigin(origin, 'http')),
   credentials: true
 });
 
@@ -28,7 +36,7 @@ app.get('/health', () => ({ status: 'ok' }));
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(app.server, {
   cors: {
-    origin: (origin, cb) => cb(null, isAllowedClientOrigin(origin))
+    origin: (origin, cb) => cb(null, checkAllowedOrigin(origin, 'socket'))
   }
 });
 
