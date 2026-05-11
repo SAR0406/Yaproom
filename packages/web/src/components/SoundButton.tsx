@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/Button";
 
 type SoundProfile = "airhorn" | "suspense" | "roast";
@@ -30,6 +30,14 @@ export function SoundButton({
   profile?: SoundProfile;
 }) {
   const contextRef = useRef<AudioContext | null>(null);
+
+  useEffect(
+    () => () => {
+      void contextRef.current?.close();
+      contextRef.current = null;
+    },
+    []
+  );
 
   const playSound = async () => {
     if (typeof window === "undefined") return;

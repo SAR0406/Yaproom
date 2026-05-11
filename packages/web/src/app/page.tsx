@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { joinRoom } from "@/lib/roomActions";
 import { normalizeRoomCode } from "@/lib/roomCode";
+import { NICKNAME_MAX_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constraints";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
@@ -16,7 +17,7 @@ export default function Home() {
   const [name, setName] = useState("");
 
   const normalizedCode = normalizeRoomCode(roomCode);
-  const canJoin = Boolean(name.trim()) && normalizedCode.length === 4;
+  const canJoin = Boolean(name.trim()) && normalizedCode.length === ROOM_CODE_LENGTH;
   const canCreate = Boolean(name.trim());
 
   const handleJoin = () => {
@@ -69,7 +70,7 @@ export default function Home() {
           label="Nickname"
           placeholder="Your chaos name"
           value={name}
-          maxLength={24}
+          maxLength={NICKNAME_MAX_LENGTH}
           onChange={(event) => setName(event.target.value)}
         />
 
@@ -79,7 +80,7 @@ export default function Home() {
               label="Room code"
               placeholder="ABCD"
               value={normalizedCode}
-              maxLength={4}
+              maxLength={ROOM_CODE_LENGTH}
               onChange={(event) =>
                 setRoomCode(normalizeRoomCode(event.target.value))
               }

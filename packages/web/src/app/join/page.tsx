@@ -8,6 +8,7 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { joinRoom } from "@/lib/roomActions";
 import { normalizeRoomCode } from "@/lib/roomCode";
+import { NICKNAME_MAX_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constraints";
 import { useRoomStore } from "@/stores/roomStore";
 
 export default function JoinPage() {
@@ -16,7 +17,7 @@ export default function JoinPage() {
   const [nickname, setNickname] = useState("");
   const [code, setCode] = useState("");
   const normalizedCode = normalizeRoomCode(code);
-  const canJoin = Boolean(nickname.trim()) && normalizedCode.length === 4;
+  const canJoin = Boolean(nickname.trim()) && normalizedCode.length === ROOM_CODE_LENGTH;
 
   const handleJoin = () => {
     if (!canJoin) return;
@@ -38,13 +39,14 @@ export default function JoinPage() {
             label="Nickname"
             placeholder="your best yap name"
             value={nickname}
+            maxLength={NICKNAME_MAX_LENGTH}
             onChange={(event) => setNickname(event.target.value)}
           />
           <Input
             label="Room code"
             placeholder="ABCD"
             value={normalizedCode}
-            maxLength={4}
+            maxLength={ROOM_CODE_LENGTH}
             onChange={(event) =>
               setCode(normalizeRoomCode(event.target.value))
             }

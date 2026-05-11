@@ -9,6 +9,7 @@ import { Button } from "@/components/Button";
 import { createRoom } from "@/lib/roomActions";
 import type { GameMode, RoomSettings } from "@yapzi/shared";
 import { useRoomStore } from "@/stores/roomStore";
+import { MAX_PLAYERS, MIN_PLAYERS, NICKNAME_MAX_LENGTH } from "@/lib/constraints";
 
 const defaultSettings: RoomSettings = {
   maxPlayers: 10,
@@ -66,14 +67,15 @@ export default function CreateRoomPage() {
             label="Host nickname"
             placeholder="chaos commander"
             value={nickname}
+            maxLength={NICKNAME_MAX_LENGTH}
             onChange={(event) => setNickname(event.target.value)}
           />
           <Input
             label="Max players"
             type="number"
             value={maxPlayers}
-            min={2}
-            max={20}
+            min={MIN_PLAYERS}
+            max={MAX_PLAYERS}
             onChange={(event) => setMaxPlayers(event.target.value)}
           />
           <div className="rounded-2xl border-[3px] border-black bg-yellow-200 px-4 py-3 shadow-[4px_4px_0_0_#000]">

@@ -8,6 +8,7 @@ import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { joinRoom } from "@/lib/roomActions";
 import { normalizeRoomCode } from "@/lib/roomCode";
+import { NICKNAME_MAX_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constraints";
 
 export function LandingJoinCard() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export function LandingJoinCard() {
   const normalizedCode = normalizeRoomCode(code);
 
   const handleJoin = () => {
-    if (!nickname.trim() || normalizedCode.length !== 4) return;
+    if (!nickname.trim() || normalizedCode.length !== ROOM_CODE_LENGTH) return;
     joinRoom({ code: normalizedCode, nickname: nickname.trim() });
     router.push(`/room/${normalizedCode}?name=${encodeURIComponent(nickname.trim())}`);
   };
@@ -36,6 +37,7 @@ export function LandingJoinCard() {
             label="Nickname"
             placeholder="yap legend"
             value={nickname}
+            maxLength={NICKNAME_MAX_LENGTH}
             onChange={(event) => setNickname(event.target.value)}
           />
           <Input
