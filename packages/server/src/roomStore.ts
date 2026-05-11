@@ -1,5 +1,5 @@
 import type { RoomState } from '@yapzi/shared';
-import { redis } from './redis';
+import { redis } from './redis.js';
 
 const ROOM_PREFIX = 'room:';
 
