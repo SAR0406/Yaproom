@@ -11,7 +11,7 @@ import type {
   GuessSubmitPayload,
   ConfessionSubmitPayload
 } from '@yapzi/shared';
-import { defaultGamePhases } from './roomUtils';
+import { defaultGamePhases } from './roomUtils.js';
 
 const modePhaseOverrides: Partial<Record<GameMode, GamePhase[]>> = {
   drawing: ['instructions', 'action', 'timer', 'guess', 'reveal', 'recap'],
