@@ -13,16 +13,16 @@ import type {
   ServerToClientEvents,
   ErrorCode
 } from '@yapzi/shared';
-import { createGameSession, advancePhase } from './gameEngine';
-import { recordRoomEvent } from './db';
-import { createPlayer, createRoom, defaultQueue, defaultSettings } from './roomUtils';
-import { getRoom, removeRoom, saveRoom } from './roomStore';
+import { createGameSession, advancePhase } from './gameEngine.js';
+import { recordRoomEvent } from './db.js';
+import { createPlayer, createRoom, defaultQueue, defaultSettings } from './roomUtils.js';
+import { getRoom, removeRoom, saveRoom } from './roomStore.js';
 import {
   assertSafeText,
   hasAbusiveLanguage,
   sanitizeEmojiReaction,
   sanitizeMemeUrl
-} from './contentSafety';
+} from './contentSafety.js';
 
 const supportedModes: Set<GameMode> = new Set([
   'imposter',
