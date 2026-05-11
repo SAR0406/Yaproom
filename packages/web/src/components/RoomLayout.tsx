@@ -17,8 +17,8 @@ export function RoomLayout({
   children: (room: import("@yapzi/shared").RoomState) => ReactNode;
 }) {
   const roomInStore = useRoomStore((state) => state.room);
-  const params = useParams();
-  const code = normalizeRoomCode(String(params.code ?? ""));
+  const params = useParams<{ code: string }>();
+  const code = normalizeRoomCode(params.code);
 
   useEffect(() => {
     if (roomInStore || !code) return;

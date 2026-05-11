@@ -6,6 +6,7 @@ import { Button } from "@/components/Button";
 type SoundProfile = "airhorn" | "suspense" | "roast";
 
 const NOISE_AMPLITUDE = 0.05;
+const MIN_FREQUENCY = 1;
 const SOUND_PROFILES: Record<
   SoundProfile,
   {
@@ -56,7 +57,7 @@ export function SoundButton({
     oscillator.type = config.osc;
     oscillator.frequency.setValueAtTime(config.start, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-      Math.max(config.end, 1),
+      Math.max(config.end, MIN_FREQUENCY),
       now + config.duration
     );
     oscillator.connect(master);
