@@ -130,7 +130,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } }
 };
 
-function randomRoomCode() {
+function generateRandomRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
@@ -221,12 +221,12 @@ function ParticleField() {
 export default function Home() {
   const [tab, setTab] = useState<'join' | 'create'>('join');
   const [roomCode, setRoomCode] = useState('');
-  const [livePlayers, setLivePlayers] = useState(27841);
-  const [generatedCode, setGeneratedCode] = useState(() => randomRoomCode());
+  const [simulatedPlayerCount, setSimulatedPlayerCount] = useState(27841);
+  const [generatedCode, setGeneratedCode] = useState(() => generateRandomRoomCode());
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setLivePlayers((value) => value + Math.floor(Math.random() * 5) + 1);
+      setSimulatedPlayerCount((value) => value + Math.floor(Math.random() * 5) + 1);
     }, 2200);
     return () => window.clearInterval(interval);
   }, []);
@@ -254,7 +254,7 @@ export default function Home() {
       <div className="bg-gradient-to-r from-primary/30 via-secondary/20 to-pink/30 py-2 text-xs text-foreground/90">
         <div className="marquee-track flex items-center gap-12 px-4 font-medium">
           {[...tickerEvents, ...tickerEvents].map((item, index) => (
-            <span key={`${item}-${index}`} className="whitespace-nowrap">
+            <span key={index} className="whitespace-nowrap">
               {item}
             </span>
           ))}
@@ -281,12 +281,12 @@ export default function Home() {
             </p>
             <div className="flex items-center gap-4">
               <motion.div
-                key={livePlayers}
+                key={simulatedPlayerCount}
                 initial={{ scale: 0.94, opacity: 0.7 }}
                 animate={{ scale: 1, opacity: 1 }}
                 className="text-3xl font-bold text-secondary"
               >
-                {livePlayers.toLocaleString()}
+                {simulatedPlayerCount.toLocaleString()}
               </motion.div>
               <span className="text-sm uppercase tracking-[0.18em] text-slate-400">
                 players live now
@@ -504,7 +504,7 @@ export default function Home() {
               </code>
               <button
                 type="button"
-                onClick={() => setGeneratedCode(randomRoomCode())}
+                onClick={() => setGeneratedCode(generateRandomRoomCode())}
                 className="rounded-2xl border border-primary/40 bg-primary/20 px-4 py-3 text-sm font-semibold text-primary transition hover:bg-primary/30"
               >
                 Generate new code

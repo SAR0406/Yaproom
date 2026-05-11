@@ -6,6 +6,7 @@ import type { ClientToServerEvents, ServerToClientEvents } from '@yapzi/shared';
 import { config, isAllowedClientOrigin } from './config.js';
 import { registerSocketHandlers } from './socketHandlers.js';   // ✅ FIXED
 import { registerAdminRoutes } from './adminRoutes.js';         // ✅ FIXED
+import { registerAiRoutes } from './aiRoutes.js';
 
 const app = fastify({ logger: true });
 
@@ -42,6 +43,7 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(app.server, {
 
 registerSocketHandlers(io);
 registerAdminRoutes(app, io);
+registerAiRoutes(app);
 
 const start = async () => {
   try {

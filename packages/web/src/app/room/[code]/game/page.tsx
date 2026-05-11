@@ -19,6 +19,7 @@ import {
   submitVote
 } from '@/lib/roomActions';
 import { describePhase, gameModeLabels } from '@/lib/gameEngine';
+import { fetchAiPrompts } from '@/lib/ai';
 
 const CANVAS_WIDTH = 300;
 const CANVAS_HEIGHT = 200;
@@ -34,6 +35,10 @@ export default function GamePage() {
   const playerId = useRoomStore((state) => state.playerId);
   const [guessText, setGuessText] = useState('');
   const [confessionText, setConfessionText] = useState('');
+  const [aiPromptMode, setAiPromptMode] = useState<'truth' | 'dare'>('truth');
+  const [aiPrompts, setAiPrompts] = useState<string[]>([]);
+  const [isPromptLoading, setIsPromptLoading] = useState(false);
+  const [promptError, setPromptError] = useState<string | null>(null);
 
   return (
     <RoomLayout>
@@ -170,6 +175,50 @@ export default function GamePage() {
               <Card className="flex flex-col items-center gap-4">
                 <TimerRing progress={progress} label="Round time" />
                 {isHost ? <Button onClick={() => nextRound()}>Advance phase</Button> : null}
+              </Card>
+              <Card className="space-y-3">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted">
+                  AI chaos cards
+                </h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant={aiPromptMode === 'truth' ? 'primary' : 'secondary'}
+                    onClick={() => setAiPromptMode('truth')}
+                  >
+                    Truth
+                  </Button>
+                  <Button
+                    variant={aiPromptMode === 'dare' ? 'primary' : 'secondary'}
+                    onClick={() => setAiPromptMode('dare')}
+                  >
+                    Dare
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsPromptLoading(true);
+                      setPromptError(null);
+                      void fetchAiPrompts({
+                        kind: aiPromptMode,
+                        count: 3,
+                        tone: 'chaotic',
+                        topic: room.game?.mode
+                      })
+                        .then((result) => setAiPrompts(result.prompts))
+                        .catch(() => setPromptError('Could not generate prompts right now.'))
+                        .finally(() => setIsPromptLoading(false));
+                    }}
+                  >
+                    {isPromptLoading ? 'Generating…' : 'Generate'}
+                  </Button>
+                </div>
+                {promptError ? <p className="text-xs text-danger">{promptError}</p> : null}
+                <ul className="space-y-2 text-sm text-muted">
+                  {aiPrompts.map((prompt) => (
+                    <li key={`${aiPromptMode}-${prompt}`} className="rounded-xl border border-white/10 bg-surface px-3 py-2">
+                      {prompt}
+                    </li>
+                  ))}
+                </ul>
               </Card>
               {room.game.chaosEvents.at(-1) ? (
                 <ChaosOverlay message={room.game.chaosEvents.at(-1)?.label ?? 'Chaos'} />

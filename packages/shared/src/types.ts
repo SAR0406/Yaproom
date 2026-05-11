@@ -129,3 +129,30 @@ export interface ErrorPayload {
   code: ErrorCode;
   message: string;
 }
+
+export interface AiRecapInput {
+  roomCode: string;
+  mode: GameMode;
+  players: Array<{ nickname: string; score: number }>;
+  highlights?: string[];
+}
+
+export interface AiRecapResult {
+  summary: string;
+  roast: string;
+  source: 'nim' | 'fallback';
+}
+
+export type AiPromptKind = 'truth' | 'dare' | 'roast' | 'icebreaker';
+
+export interface AiPromptInput {
+  kind: AiPromptKind;
+  count?: number;
+  tone?: 'chaotic' | 'playful' | 'spicy';
+  topic?: string;
+}
+
+export interface AiPromptResult {
+  prompts: string[];
+  source: 'nim' | 'fallback';
+}
