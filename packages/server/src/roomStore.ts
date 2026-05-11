@@ -9,7 +9,12 @@ export async function saveRoom(room: RoomState): Promise<void> {
 
 export async function getRoom(code: string): Promise<RoomState | null> {
   const data = await redis.get(`${ROOM_PREFIX}${code}`);
-  return data ? (JSON.parse(data) as RoomState) : null;
+  if (!data) return null;
+  const parsed = JSON.parse(data) as RoomState;
+  return {
+    ...parsed,
+    bannedPlayerIds: parsed.bannedPlayerIds ?? []
+  };
 }
 
 export async function removeRoom(code: string): Promise<void> {

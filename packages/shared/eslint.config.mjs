@@ -15,7 +15,7 @@ const config = [
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ),
   {
-    ignores: ["dist/**", "node_modules/**"],
+    ignores: ["dist/**", "node_modules/**", "src/**/*.d.ts"],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

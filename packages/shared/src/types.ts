@@ -78,6 +78,7 @@ export interface RoomState {
   settings: RoomSettings;
   queue: GameMode[];
   players: PlayerState[];
+  bannedPlayerIds: string[];
   game: GameSessionState | null;
 }
 

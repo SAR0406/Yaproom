@@ -75,6 +75,7 @@ export function createRoom(
     settings,
     queue,
     players: [host],
+    bannedPlayerIds: [],
     game: null
   };
 }

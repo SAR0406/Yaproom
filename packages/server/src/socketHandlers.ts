@@ -6,12 +6,21 @@ import type {
   RoomCreatePayload,
   RoomJoinPayload,
   RoomSettings,
+  RoomState,
   ServerToClientEvents
 } from '@yapzi/shared';
 import { createGameSession, advancePhase } from './gameEngine';
 import { recordRoomEvent } from './db';
 import { createPlayer, createRoom, defaultQueue, defaultSettings } from './roomUtils';
 import { getRoom, removeRoom, saveRoom } from './roomStore';
+
+const supportedModes: Set<GameMode> = new Set([
+  'imposter',
+  'drawing',
+  'expose',
+  'confession',
+  'split'
+]);
 
 export type YapziSocket = Socket<
   ClientToServerEvents,
@@ -28,9 +37,9 @@ interface SocketData {
 export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerToClientEvents>) {
   io.on('connection', (socket: YapziSocket) => {
     socket.on('room:create', async (payload: RoomCreatePayload) => {
-      const settings = payload.settings ?? defaultSettings;
-      const queue = payload.queue?.length ? payload.queue : defaultQueue;
-      const host = createPlayer(payload.nickname, true);
+      const settings = sanitizeSettings(payload.settings ?? defaultSettings);
+      const queue = sanitizeQueue(payload.queue);
+      const host = createPlayer(sanitizeNickname(payload.nickname), true);
       const room = createRoom(host, settings, queue);
       await saveRoom(room);
 
@@ -42,7 +51,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('room:join', async (payload: RoomJoinPayload) => {
-      const room = await getRoom(payload.code);
+      const room = await getRoom(sanitizeRoomCode(payload.code));
       if (!room) {
         socket.emit('room:error', { code: 'INVALID_CODE', message: 'Room not found.' });
         return;
@@ -51,26 +60,37 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
         socket.emit('room:error', { code: 'ROOM_LOCKED', message: 'Room is locked.' });
         return;
       }
-      if (room.players.length >= room.settings.maxPlayers) {
-        socket.emit('room:error', { code: 'ROOM_FULL', message: 'Room is full.' });
+      if (room.status === 'in_game' && !room.settings.allowLateJoin) {
+        socket.emit('room:error', {
+          code: 'GAME_IN_PROGRESS',
+          message: 'Game already started. Late join is disabled.'
+        });
         return;
       }
 
       const existing = payload.playerId
         ? room.players.find((player) => player.id === payload.playerId)
         : undefined;
-      if (existing?.isBanned) {
+
+      if (payload.playerId && room.bannedPlayerIds.includes(payload.playerId)) {
         socket.emit('room:error', { code: 'PLAYER_BANNED', message: 'You were banned.' });
         return;
       }
+
+      if (!existing && room.players.length >= room.settings.maxPlayers) {
+        socket.emit('room:error', { code: 'ROOM_FULL', message: 'Room is full.' });
+        return;
+      }
+
       const player = existing
         ? {
             ...existing,
-            nickname: payload.nickname,
+            nickname: sanitizeNickname(payload.nickname),
             isConnected: true,
+            isBanned: false,
             lastActiveAt: new Date().toISOString()
           }
-        : createPlayer(payload.nickname, false, {
+        : createPlayer(sanitizeNickname(payload.nickname), false, {
             id: payload.playerId
           });
 
@@ -97,7 +117,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
 
     socket.on('room:ready', async ({ playerId, isReady }) => {
       const room = await getRoomFromSocket(socket);
-      if (!room) return;
+      if (!room || playerId !== socket.data.playerId) return;
       room.players = room.players.map((player) =>
         player.id === playerId
           ? { ...player, isReady, lastActiveAt: new Date().toISOString() }
@@ -110,19 +130,44 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     socket.on('room:settings', async (settings: RoomSettings) => {
       const room = await getRoomFromSocket(socket);
       if (!room || room.hostId !== socket.data.playerId) return;
-      room.settings = settings;
+      room.settings = sanitizeSettings(settings);
       await saveRoom(room);
       io.to(room.code).emit('room:update', room);
+      await recordRoomEvent(room.id, 'room:settings', { settings: room.settings });
+    });
+
+    socket.on('room:status', async ({ status }) => {
+      const room = await getRoomFromSocket(socket);
+      if (!room || room.hostId !== socket.data.playerId) return;
+      if (status !== 'open' && status !== 'locked') return;
+      room.status = status;
+      await saveRoom(room);
+      io.to(room.code).emit('room:update', room);
+      await recordRoomEvent(room.id, 'room:status', { status });
+    });
+
+    socket.on('room:queue', async ({ queue }) => {
+      const room = await getRoomFromSocket(socket);
+      if (!room || room.hostId !== socket.data.playerId) return;
+      room.queue = sanitizeQueue(queue);
+      if (room.game) {
+        room.game.queue = [...room.queue];
+      }
+      await saveRoom(room);
+      io.to(room.code).emit('room:update', room);
+      await recordRoomEvent(room.id, 'room:queue', { queue: room.queue });
     });
 
     socket.on('game:start', async ({ mode }: { mode: GameMode }) => {
       const room = await getRoomFromSocket(socket);
       if (!room || room.hostId !== socket.data.playerId) return;
+      if (!supportedModes.has(mode)) return;
       room.status = 'in_game';
       room.game = createGameSession(mode, room.queue ?? [], room);
       await saveRoom(room);
       io.to(room.code).emit('game:mode', mode);
       io.to(room.code).emit('room:update', room);
+      await recordRoomEvent(room.id, 'game:start', { mode });
     });
 
     socket.on('round:next', async () => {
@@ -137,6 +182,10 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
         });
       }
       io.to(room.code).emit('room:update', updated);
+      await recordRoomEvent(room.id, 'round:next', {
+        phase: updated.game?.round.phase,
+        round: updated.game?.round.number
+      });
     });
 
     socket.on('reaction:send', async (payload) => {
@@ -147,7 +196,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
 
     socket.on('vote:submit', async (payload) => {
       const room = await getRoomFromSocket(socket);
-      if (!room?.game) return;
+      if (!room?.game || payload.playerId !== socket.data.playerId) return;
       const votes = (room.game.round.payload?.votes as typeof payload[] | undefined) ?? [];
       room.game.round.payload = {
         ...room.game.round.payload,
@@ -159,11 +208,12 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
 
     socket.on('guess:submit', async (payload) => {
       const room = await getRoomFromSocket(socket);
-      if (!room?.game) return;
-      const guesses = (room.game.round.payload?.guesses as typeof payload[] | undefined) ?? [];
+      if (!room?.game || payload.playerId !== socket.data.playerId) return;
+      const key = room.game.mode === 'split' ? 'choices' : 'guesses';
+      const current = (room.game.round.payload?.[key] as typeof payload[] | undefined) ?? [];
       room.game.round.payload = {
         ...room.game.round.payload,
-        guesses: [...guesses.filter((guess) => guess.playerId !== payload.playerId), payload]
+        [key]: [...current.filter((guess) => guess.playerId !== payload.playerId), payload]
       };
       await saveRoom(room);
       io.to(room.code).emit('room:update', room);
@@ -171,12 +221,12 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
 
     socket.on('confession:submit', async (payload) => {
       const room = await getRoomFromSocket(socket);
-      if (!room?.game) return;
+      if (!room?.game || payload.playerId !== socket.data.playerId) return;
       const confessions =
         (room.game.round.payload?.confessions as typeof payload[] | undefined) ?? [];
       room.game.round.payload = {
         ...room.game.round.payload,
-        confessions: [...confessions, payload]
+        confessions: [...confessions.filter((entry) => entry.playerId !== payload.playerId), payload]
       };
       await saveRoom(room);
       io.to(room.code).emit('room:update', room);
@@ -184,7 +234,7 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
 
     socket.on('draw:path', async (payload) => {
       const room = await getRoomFromSocket(socket);
-      if (!room?.game) return;
+      if (!room?.game || payload.playerId !== socket.data.playerId) return;
       const drawPaths = (room.game.round.payload?.drawPaths as typeof payload[] | undefined) ?? [];
       room.game.round.payload = {
         ...room.game.round.payload,
@@ -224,6 +274,8 @@ async function handleAdminAction(
 ) {
   const room = await getRoomFromSocket(socket);
   if (!room || room.hostId !== socket.data.playerId) return;
+  if (payload.adminId !== socket.data.playerId) return;
+  if (payload.targetId === room.hostId) return;
 
   room.players = room.players.map((player) => {
     if (player.id !== payload.targetId) return player;
@@ -236,9 +288,28 @@ async function handleAdminAction(
     room.players = room.players.filter((player) => player.id !== payload.targetId);
   }
 
+  if (action === 'ban' && !room.bannedPlayerIds.includes(payload.targetId)) {
+    room.bannedPlayerIds.push(payload.targetId);
+  }
+
+  if (!room.players.find((player) => player.id === room.hostId)) {
+    assignNextHost(room);
+  }
+
   await saveRoom(room);
   io.to(room.code).emit('room:update', room);
-  await recordRoomEvent(room.id, `admin:${action}`, payload);
+
+  for (const client of io.sockets.sockets.values()) {
+    if (client.data.roomCode === room.code && client.data.playerId === payload.targetId) {
+      client.emit('room:error', {
+        code: action === 'ban' ? 'PLAYER_BANNED' : 'PLAYER_KICKED',
+        message: action === 'ban' ? 'You were banned from this room.' : 'You were removed by the host.'
+      });
+      void client.leave(room.code);
+    }
+  }
+
+  await recordRoomEvent(room.id, `admin:${action}`, { ...payload });
 }
 
 async function handleDisconnect(
@@ -271,14 +342,55 @@ async function handleDisconnect(
     return;
   }
 
+  if (!room.players.find((player) => player.id === room.hostId)) {
+    assignNextHost(room);
+  }
+
   await saveRoom(room);
   io.to(room.code).emit('room:update', room);
 
-  const hostDisconnected = room.players.find((player) => player.id === room.hostId);
-  if (hostDisconnected && !hostDisconnected.isConnected) {
+  const host = room.players.find((player) => player.id === room.hostId);
+  if (host && !host.isConnected) {
     io.to(room.code).emit('room:error', {
       code: 'HOST_DISCONNECTED',
       message: 'Host disconnected. Waiting for reconnect.'
     });
   }
+}
+
+function sanitizeNickname(value: string): string {
+  const trimmed = value.trim().slice(0, 24);
+  return trimmed || 'Player';
+}
+
+function sanitizeRoomCode(code: string): string {
+  return code.trim().toUpperCase();
+}
+
+function sanitizeSettings(settings: RoomSettings): RoomSettings {
+  return {
+    ...settings,
+    maxPlayers: clamp(settings.maxPlayers, 2, 20),
+    roundLengthSec: clamp(settings.roundLengthSec, 15, 180)
+  };
+}
+
+function sanitizeQueue(queue?: GameMode[]): GameMode[] {
+  if (!queue?.length) return defaultQueue;
+  const cleaned = queue.filter((mode) => supportedModes.has(mode));
+  return cleaned.length ? cleaned : defaultQueue;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, Number.isFinite(value) ? value : min));
+}
+
+function assignNextHost(room: RoomState) {
+  const nextHost = room.players.find((player) => player.isConnected) ?? room.players[0];
+  if (!nextHost) return;
+  room.hostId = nextHost.id;
+  room.players = room.players.map((player) => ({
+    ...player,
+    isHost: player.id === nextHost.id
+  }));
 }

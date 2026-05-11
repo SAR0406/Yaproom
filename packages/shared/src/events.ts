@@ -5,7 +5,8 @@ import type {
   PlayerState,
   RoomSettings,
   RoomState,
-  RoundState
+  RoundState,
+  RoomStatus
 } from './types';
 
 export interface RoomCreatePayload {
@@ -32,6 +33,14 @@ export interface PlayerReadyPayload {
 
 export interface GameStartPayload {
   mode: GameMode;
+}
+
+export interface QueueUpdatePayload {
+  queue: GameMode[];
+}
+
+export interface RoomStatusPayload {
+  status: RoomStatus;
 }
 
 export interface RoundUpdatePayload {
@@ -76,6 +85,8 @@ export interface ClientToServerEvents {
   'room:leave': () => void;
   'room:ready': (payload: PlayerReadyPayload) => void;
   'room:settings': (payload: RoomSettings) => void;
+  'room:status': (payload: RoomStatusPayload) => void;
+  'room:queue': (payload: QueueUpdatePayload) => void;
   'game:start': (payload: GameStartPayload) => void;
   'round:next': () => void;
   'vote:submit': (payload: VoteSubmitPayload) => void;

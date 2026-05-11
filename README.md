@@ -55,3 +55,7 @@ For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` if ne
 - **Database**: Use Supabase/Neon for Postgres, Upstash for Redis.
 
 Apply `packages/server/sql/schema.sql` to initialize database tables.
+
+## Product gap checklist
+
+Track implementation progress against the full Yapzi product spec in `docs/gap-checklist.md`.

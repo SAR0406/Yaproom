@@ -8,7 +8,7 @@ const pool = config.databaseUrl
 export async function recordRoomEvent(
   roomId: string,
   type: string,
-  payload: Record<string, unknown>
+  payload: unknown
 ): Promise<void> {
   if (!pool) return;
   try {
