@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { joinRoom } from "@/lib/roomActions";
 
 /* ---------- helpers ---------- */
 const fadeUp = {
@@ -34,7 +35,8 @@ export default function Home() {
 
   const handleJoin = () => {
     if (roomCode.length === 6 && name) {
-      router.push(`/room/${roomCode}?name=${encodeURIComponent(name)}`);
+      joinRoom({ code: roomCode, nickname: name });
+      router.push(`/room/${roomCode}`);
     }
   };
 

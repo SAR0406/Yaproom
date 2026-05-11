@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageLayout } from "@/components/PageLayout";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
@@ -33,8 +33,9 @@ const modes: GameMode[] = [
 
 export default function CreateRoomPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const room = useRoomStore((state) => state.room);
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState(() => searchParams.get("name") ?? "");
   const [maxPlayers, setMaxPlayers] = useState("10");
 
   useEffect(() => {
