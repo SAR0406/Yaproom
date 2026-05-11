@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
-import { config } from './config';
-import { encryptForStorage } from './security';
+import { config } from './config.js';
+import { encryptForStorage } from './security.js';
 
 const pool = config.databaseUrl
   ? new Pool({ connectionString: config.databaseUrl })
