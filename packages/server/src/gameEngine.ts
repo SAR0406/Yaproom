@@ -178,7 +178,7 @@ function selectPrompt(mode: GameMode): string {
 
 function pickSplitPair(room: RoomState): [string, string] {
   if (room.players.length < 2) {
-    return [room.hostId, room.hostId];
+    throw new Error('Split mode requires at least two players.');
   }
   const first = room.players[0]?.id ?? room.hostId;
   const second = room.players[1]?.id ?? room.hostId;

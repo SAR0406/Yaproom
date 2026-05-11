@@ -10,7 +10,8 @@ import type {
   RoomJoinPayload,
   RoomSettings,
   RoomState,
-  ServerToClientEvents
+  ServerToClientEvents,
+  ErrorCode
 } from '@yapzi/shared';
 import { createGameSession, advancePhase } from './gameEngine';
 import { recordRoomEvent } from './db';
@@ -492,7 +493,8 @@ async function handleDisconnect(
 
 function sanitizeNickname(value: string): string {
   const trimmed = value.trim().slice(0, MAX_NICKNAME_LENGTH);
-  return trimmed || 'Player';
+  if (trimmed) return trimmed;
+  return `Player-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 }
 
 function sanitizeRoomCode(code: string): string {
@@ -555,7 +557,7 @@ function purgeSocketRateLimits(socketId: string) {
 
 function emitRoomError(
   socket: YapziSocket,
-  code: 'ABUSIVE_LANGUAGE' | 'RATE_LIMIT' | 'UNKNOWN' | 'INVALID_CODE' | 'ROOM_LOCKED' | 'GAME_IN_PROGRESS' | 'PLAYER_BANNED' | 'ROOM_FULL' | 'INSUFFICIENT_PLAYERS',
+  code: ErrorCode,
   message: string
 ) {
   socket.emit('room:error', { code, message });

@@ -112,18 +112,20 @@ export type ChaosEventType =
   | 'aura_surge'
   | 'cooked_mode';
 
+export type ErrorCode =
+  | 'ROOM_FULL'
+  | 'ROOM_LOCKED'
+  | 'INVALID_CODE'
+  | 'HOST_DISCONNECTED'
+  | 'GAME_IN_PROGRESS'
+  | 'PLAYER_KICKED'
+  | 'PLAYER_BANNED'
+  | 'INSUFFICIENT_PLAYERS'
+  | 'ABUSIVE_LANGUAGE'
+  | 'RATE_LIMIT'
+  | 'UNKNOWN';
+
 export interface ErrorPayload {
-  code:
-    | 'ROOM_FULL'
-    | 'ROOM_LOCKED'
-    | 'INVALID_CODE'
-    | 'HOST_DISCONNECTED'
-    | 'GAME_IN_PROGRESS'
-    | 'PLAYER_KICKED'
-    | 'PLAYER_BANNED'
-    | 'INSUFFICIENT_PLAYERS'
-    | 'ABUSIVE_LANGUAGE'
-    | 'RATE_LIMIT'
-    | 'UNKNOWN';
+  code: ErrorCode;
   message: string;
 }

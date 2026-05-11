@@ -43,6 +43,7 @@ export default function GameSelectionPage() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    disabled={index === 0}
                     onClick={() => {
                       if (index === 0) return;
                       const queue = [...room.queue];
@@ -55,6 +56,7 @@ export default function GameSelectionPage() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    disabled={index === room.queue.length - 1}
                     onClick={() => {
                       if (index === room.queue.length - 1) return;
                       const queue = [...room.queue];

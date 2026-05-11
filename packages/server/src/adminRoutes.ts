@@ -2,10 +2,12 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { Server } from 'socket.io';
 import type { ClientToServerEvents, RoomState, ServerToClientEvents } from '@yapzi/shared';
 import { z } from 'zod';
-import { getRoom, listRooms, saveRoom } from './roomStore';
+import { getRoom, listRooms, removeRoom, saveRoom } from './roomStore';
 import { parseBasicAuth, verifyAdminCredentials } from './security';
 import { recordRoomEvent } from './db';
 import { assertSafeText } from './contentSafety';
+
+const codeParamsSchema = z.object({ code: z.string().min(1) });
 
 const statusSchema = z.object({
   status: z.enum(['open', 'locked', 'ended'])
@@ -24,19 +26,11 @@ export function registerAdminRoutes(
   app: FastifyInstance,
   io: Server<ClientToServerEvents, ServerToClientEvents>
 ) {
-  app.addHook('preHandler', async (request, reply) => {
-    if (!request.routeOptions.url.startsWith('/admin')) {
-      return;
-    }
+  app.get('/admin', async (request, reply) => {
     if (!isAuthorized(request)) {
-      reply
-        .code(401)
-        .header('WWW-Authenticate', 'Basic realm="Yapzi Admin"')
-        .send({ error: 'Unauthorized' });
+      return unauthorized(reply);
     }
-  });
 
-  app.get('/admin', async () => {
     const rooms = await listRooms();
     return {
       ok: true,
@@ -45,7 +39,11 @@ export function registerAdminRoutes(
     };
   });
 
-  app.get('/admin/rooms', async () => {
+  app.get('/admin/rooms', async (request, reply) => {
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
+    }
+
     const rooms = await listRooms();
     return {
       rooms: rooms.map((room) => ({
@@ -58,17 +56,33 @@ export function registerAdminRoutes(
   });
 
   app.post('/admin/rooms/:code/status', async (request, reply) => {
-    const parsed = statusSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid body' });
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
     }
 
-    const room = await getRoom(request.params.code);
+    const code = parseRoomCodeParam(request.params);
+    const parsed = statusSchema.safeParse(request.body);
+    if (!code || !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid request' });
+    }
+
+    const room = await getRoom(code);
     if (!room) {
       return reply.code(404).send({ error: 'Room not found' });
     }
 
     room.status = parsed.data.status;
+    if (room.status === 'ended') {
+      io.to(room.code).emit('room:error', {
+        code: 'UNKNOWN',
+        message: 'Room ended by administrator.'
+      });
+      io.in(room.code).disconnectSockets(true);
+      await removeRoom(room.code);
+      await recordRoomEvent(room.id, 'admin:status', parsed.data);
+      return { ok: true, roomCode: room.code, status: room.status, ended: true };
+    }
+
     await saveRoom(room);
     io.to(room.code).emit('room:update', room);
     await recordRoomEvent(room.id, 'admin:status', parsed.data);
@@ -77,12 +91,17 @@ export function registerAdminRoutes(
   });
 
   app.post('/admin/rooms/:code/mute', async (request, reply) => {
-    const parsed = targetSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid body' });
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
     }
 
-    const room = await getRoom(request.params.code);
+    const code = parseRoomCodeParam(request.params);
+    const parsed = targetSchema.safeParse(request.body);
+    if (!code || !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid request' });
+    }
+
+    const room = await getRoom(code);
     if (!room) {
       return reply.code(404).send({ error: 'Room not found' });
     }
@@ -99,12 +118,17 @@ export function registerAdminRoutes(
   });
 
   app.post('/admin/rooms/:code/kick', async (request, reply) => {
-    const parsed = targetSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid body' });
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
     }
 
-    const room = await getRoom(request.params.code);
+    const code = parseRoomCodeParam(request.params);
+    const parsed = targetSchema.safeParse(request.body);
+    if (!code || !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid request' });
+    }
+
+    const room = await getRoom(code);
     if (!room) {
       return reply.code(404).send({ error: 'Room not found' });
     }
@@ -119,12 +143,17 @@ export function registerAdminRoutes(
   });
 
   app.post('/admin/rooms/:code/ban', async (request, reply) => {
-    const parsed = targetSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid body' });
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
     }
 
-    const room = await getRoom(request.params.code);
+    const code = parseRoomCodeParam(request.params);
+    const parsed = targetSchema.safeParse(request.body);
+    if (!code || !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid request' });
+    }
+
+    const room = await getRoom(code);
     if (!room) {
       return reply.code(404).send({ error: 'Room not found' });
     }
@@ -143,9 +172,14 @@ export function registerAdminRoutes(
   });
 
   app.post('/admin/rooms/:code/announce', async (request, reply) => {
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
+    }
+
+    const code = parseRoomCodeParam(request.params);
     const parsed = announcementSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid body' });
+    if (!code || !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid request' });
     }
 
     const safe = assertSafeText(parsed.data.message);
@@ -153,7 +187,7 @@ export function registerAdminRoutes(
       return reply.code(400).send({ error: safe.message });
     }
 
-    const room = await getRoom(request.params.code);
+    const room = await getRoom(code);
     if (!room) {
       return reply.code(404).send({ error: 'Room not found' });
     }
@@ -174,6 +208,21 @@ function isAuthorized(request: FastifyRequest): boolean {
     return false;
   }
   return verifyAdminCredentials(credentials.username, credentials.password);
+}
+
+function unauthorized(reply: FastifyReply) {
+  return reply
+    .code(401)
+    .header('WWW-Authenticate', 'Basic realm="Yapzi Admin"')
+    .send({ error: 'Unauthorized' });
+}
+
+function parseRoomCodeParam(params: unknown): string | null {
+  const parsed = codeParamsSchema.safeParse(params);
+  if (!parsed.success) {
+    return null;
+  }
+  return parsed.data.code;
 }
 
 function disconnectTarget(

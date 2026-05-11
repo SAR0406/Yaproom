@@ -132,7 +132,7 @@ export default function LobbyPage() {
                     >
                       {room.status === 'locked' ? 'Unlock room' : 'Lock room'}
                     </Button>
-                    <Button onClick={() => firstMode && startGame(firstMode)}>
+                    <Button disabled={!firstMode} onClick={() => firstMode && startGame(firstMode)}>
                       Start {firstMode ? gameModeLabels[firstMode] : 'game'}
                     </Button>
                   </>
