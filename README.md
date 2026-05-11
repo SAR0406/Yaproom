@@ -44,6 +44,10 @@ PORT=4000
 CLIENT_ORIGIN=http://localhost:3000
 REDIS_URL=redis://localhost:6379
 DATABASE_URL=postgres://user:pass@localhost:5432/yapzi
+ADMIN_USERNAME=Frontman
+ADMIN_PASSWORD_HASH=scrypt:<salt-hex>:<hash-hex>
+APP_ENCRYPTION_KEY=<32-byte-base64-key>
+BLOCKED_TERMS=slur,hateword,kys,nazi
 ```
 
 For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` if needed.
@@ -55,3 +59,19 @@ For the web app, set `NEXT_PUBLIC_SOCKET_URL` in `packages/web/.env.local` if ne
 - **Database**: Use Supabase/Neon for Postgres, Upstash for Redis.
 
 Apply `packages/server/sql/schema.sql` to initialize database tables.
+
+## Product gap checklist
+
+Track implementation progress against the full Yapzi product spec in `docs/gap-checklist.md`.
+
+
+## Security backend design
+
+See `docs/security-backend-design.md` for the backend security architecture and admin control-plane design.
+
+
+### Generate admin password hash
+
+```bash
+node -e "const c=require('node:crypto');const p=process.argv[1];const s=c.randomBytes(16);const h=c.scryptSync(p,s,64);console.log('scrypt:'+s.toString('hex')+':'+h.toString('hex'));" 'your-strong-password'
+```

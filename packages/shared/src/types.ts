@@ -48,6 +48,15 @@ export interface PlayerState {
   lastActiveAt: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  playerId: string;
+  nickname: string;
+  text: string;
+  memeUrl: string | null;
+  createdAt: string;
+}
+
 export interface RoundState {
   id: string;
   number: number;
@@ -78,6 +87,8 @@ export interface RoomState {
   settings: RoomSettings;
   queue: GameMode[];
   players: PlayerState[];
+  bannedPlayerIds: string[];
+  chatFeed: ChatMessage[];
   game: GameSessionState | null;
 }
 
@@ -101,15 +112,20 @@ export type ChaosEventType =
   | 'aura_surge'
   | 'cooked_mode';
 
+export type ErrorCode =
+  | 'ROOM_FULL'
+  | 'ROOM_LOCKED'
+  | 'INVALID_CODE'
+  | 'HOST_DISCONNECTED'
+  | 'GAME_IN_PROGRESS'
+  | 'PLAYER_KICKED'
+  | 'PLAYER_BANNED'
+  | 'INSUFFICIENT_PLAYERS'
+  | 'ABUSIVE_LANGUAGE'
+  | 'RATE_LIMIT'
+  | 'UNKNOWN';
+
 export interface ErrorPayload {
-  code:
-    | 'ROOM_FULL'
-    | 'ROOM_LOCKED'
-    | 'INVALID_CODE'
-    | 'HOST_DISCONNECTED'
-    | 'GAME_IN_PROGRESS'
-    | 'PLAYER_KICKED'
-    | 'PLAYER_BANNED'
-    | 'UNKNOWN';
+  code: ErrorCode;
   message: string;
 }

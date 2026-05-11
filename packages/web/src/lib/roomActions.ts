@@ -9,87 +9,105 @@ import type {
   GuessSubmitPayload,
   ConfessionSubmitPayload,
   DrawPathPayload,
-} from "@yapzi/shared";
-import { getSocket } from "@/lib/socket";
+  RoomStatus,
+  ChatSendPayload
+} from '@yapzi/shared';
+import { getSocket } from '@/lib/socket';
 
 export function createRoom(payload: RoomCreatePayload) {
   const socket = getSocket();
-  socket?.emit("room:create", payload);
+  socket?.emit('room:create', payload);
 }
 
 export function joinRoom(payload: RoomJoinPayload) {
   const socket = getSocket();
   const storedPlayerId =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("yapzi:playerId")
+    typeof window !== 'undefined'
+      ? window.localStorage.getItem('yapzi:playerId')
       : null;
-  socket?.emit("room:join", {
+  socket?.emit('room:join', {
     ...payload,
-    playerId: payload.playerId ?? storedPlayerId ?? undefined,
+    playerId: payload.playerId ?? storedPlayerId ?? undefined
   });
 }
 
 export function leaveRoom() {
   const socket = getSocket();
-  socket?.emit("room:leave");
+  socket?.emit('room:leave');
 }
 
 export function setReady(payload: PlayerReadyPayload) {
   const socket = getSocket();
-  socket?.emit("room:ready", payload);
+  socket?.emit('room:ready', payload);
 }
 
 export function updateSettings(payload: RoomSettings) {
   const socket = getSocket();
-  socket?.emit("room:settings", payload);
+  socket?.emit('room:settings', payload);
+}
+
+export function updateRoomStatus(status: RoomStatus) {
+  const socket = getSocket();
+  socket?.emit('room:status', { status });
+}
+
+export function updateQueue(queue: GameMode[]) {
+  const socket = getSocket();
+  socket?.emit('room:queue', { queue });
 }
 
 export function startGame(mode: GameMode) {
   const socket = getSocket();
-  socket?.emit("game:start", { mode });
+  socket?.emit('game:start', { mode });
 }
 
 export function nextRound() {
   const socket = getSocket();
-  socket?.emit("round:next");
+  socket?.emit('round:next');
 }
 
 export function sendReaction(playerId: string, reaction: string) {
   const socket = getSocket();
-  socket?.emit("reaction:send", { playerId, reaction });
+  socket?.emit('reaction:send', { playerId, reaction });
+}
+
+
+export function sendChat(payload: ChatSendPayload) {
+  const socket = getSocket();
+  socket?.emit('chat:send', payload);
 }
 
 export function submitVote(payload: VoteSubmitPayload) {
   const socket = getSocket();
-  socket?.emit("vote:submit", payload);
+  socket?.emit('vote:submit', payload);
 }
 
 export function submitGuess(payload: GuessSubmitPayload) {
   const socket = getSocket();
-  socket?.emit("guess:submit", payload);
+  socket?.emit('guess:submit', payload);
 }
 
 export function submitConfession(payload: ConfessionSubmitPayload) {
   const socket = getSocket();
-  socket?.emit("confession:submit", payload);
+  socket?.emit('confession:submit', payload);
 }
 
 export function sendDrawPath(payload: DrawPathPayload) {
   const socket = getSocket();
-  socket?.emit("draw:path", payload);
+  socket?.emit('draw:path', payload);
 }
 
 export function adminKick(payload: AdminActionPayload) {
   const socket = getSocket();
-  socket?.emit("admin:kick", payload);
+  socket?.emit('admin:kick', payload);
 }
 
 export function adminMute(payload: AdminActionPayload) {
   const socket = getSocket();
-  socket?.emit("admin:mute", payload);
+  socket?.emit('admin:mute', payload);
 }
 
 export function adminBan(payload: AdminActionPayload) {
   const socket = getSocket();
-  socket?.emit("admin:ban", payload);
+  socket?.emit('admin:ban', payload);
 }
