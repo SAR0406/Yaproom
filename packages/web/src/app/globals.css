@@ -10,13 +10,15 @@
   --color-surface-muted: #172033;
   --color-primary: #8b5cf6;
   --color-secondary: #22d3ee;
+  --color-pink: #f472b6;
   --color-positive: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-foreground: #f8fafc;
   --color-muted: #94a3b8;
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-sora);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-bebas-neue);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @layer base {
@@ -33,5 +35,90 @@
   h3,
   h4 {
     @apply font-display;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    backdrop-filter: blur(20px);
+    background: rgba(18, 26, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+  }
+
+  .neon-hover {
+    transition:
+      box-shadow 0.3s ease,
+      border-color 0.3s ease,
+      transform 0.3s ease;
+  }
+
+  .neon-hover:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow:
+      0 0 0 1px rgba(139, 92, 246, 0.25),
+      0 0 22px rgba(34, 211, 238, 0.25),
+      0 0 42px rgba(244, 114, 182, 0.18);
+    transform: translateY(-2px);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      #8b5cf6 0%,
+      #22d3ee 35%,
+      #f472b6 55%,
+      #22d3ee 75%,
+      #8b5cf6 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 5s linear infinite;
+  }
+
+  .marquee-track {
+    animation: marquee 24s linear infinite;
+    width: max-content;
+  }
+
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 250% center;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(35px, -28px) scale(1.04);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
   }
 }
