@@ -5,10 +5,20 @@ import { Button } from "@/components/Button";
 
 type SoundProfile = "airhorn" | "suspense" | "roast";
 
-const defaultProfiles: Record<SoundProfile, { osc: OscillatorType; start: number; end: number; duration: number }> = {
-  airhorn: { osc: "sawtooth", start: 260, end: 690, duration: 0.9 },
-  suspense: { osc: "triangle", start: 180, end: 250, duration: 1.4 },
-  roast: { osc: "square", start: 420, end: 190, duration: 0.45 },
+const NOISE_AMPLITUDE = 0.05;
+const SOUND_PROFILES: Record<
+  SoundProfile,
+  {
+    osc: OscillatorType;
+    start: number;
+    end: number;
+    duration: number;
+    noiseGain: number;
+  }
+> = {
+  airhorn: { osc: "sawtooth", start: 260, end: 690, duration: 0.9, noiseGain: 0.18 },
+  suspense: { osc: "triangle", start: 180, end: 250, duration: 1.4, noiseGain: 0.08 },
+  roast: { osc: "square", start: 420, end: 190, duration: 0.45, noiseGain: 0.08 },
 };
 
 export function SoundButton({
@@ -34,7 +44,7 @@ export function SoundButton({
       await context.resume();
     }
 
-    const config = defaultProfiles[profile];
+    const config = SOUND_PROFILES[profile];
     const now = context.currentTime;
     const master = context.createGain();
     master.gain.setValueAtTime(0.0001, now);
@@ -59,7 +69,7 @@ export function SoundButton({
     );
     const channel = noiseBuffer.getChannelData(0);
     for (let index = 0; index < channel.length; index += 1) {
-      channel[index] = (Math.random() * 2 - 1) * 0.05;
+      channel[index] = (Math.random() * 2 - 1) * NOISE_AMPLITUDE;
     }
     noise.buffer = noiseBuffer;
 
@@ -67,7 +77,7 @@ export function SoundButton({
     noiseFilter.type = "highpass";
     noiseFilter.frequency.value = 900;
     const noiseGain = context.createGain();
-    noiseGain.gain.value = profile === "airhorn" ? 0.18 : 0.08;
+    noiseGain.gain.value = config.noiseGain;
 
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseGain);

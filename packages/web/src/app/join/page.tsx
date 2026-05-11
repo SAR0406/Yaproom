@@ -7,6 +7,7 @@ import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { joinRoom } from "@/lib/roomActions";
+import { normalizeRoomCode } from "@/lib/roomCode";
 import { useRoomStore } from "@/stores/roomStore";
 
 export default function JoinPage() {
@@ -14,7 +15,7 @@ export default function JoinPage() {
   const error = useRoomStore((state) => state.error);
   const [nickname, setNickname] = useState("");
   const [code, setCode] = useState("");
-  const normalizedCode = code.trim().toUpperCase().slice(0, 4);
+  const normalizedCode = normalizeRoomCode(code);
   const canJoin = Boolean(nickname.trim()) && normalizedCode.length === 4;
 
   const handleJoin = () => {
@@ -45,9 +46,7 @@ export default function JoinPage() {
             value={normalizedCode}
             maxLength={4}
             onChange={(event) =>
-              setCode(
-                event.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
-              )
+              setCode(normalizeRoomCode(event.target.value))
             }
           />
           {error ? (

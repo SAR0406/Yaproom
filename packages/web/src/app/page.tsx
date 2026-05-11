@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { joinRoom } from "@/lib/roomActions";
+import { normalizeRoomCode } from "@/lib/roomCode";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
@@ -14,7 +15,7 @@ export default function Home() {
   const [roomCode, setRoomCode] = useState("");
   const [name, setName] = useState("");
 
-  const normalizedCode = roomCode.trim().toUpperCase().slice(0, 4);
+  const normalizedCode = normalizeRoomCode(roomCode);
   const canJoin = Boolean(name.trim()) && normalizedCode.length === 4;
   const canCreate = Boolean(name.trim());
 
@@ -79,10 +80,8 @@ export default function Home() {
               placeholder="ABCD"
               value={normalizedCode}
               maxLength={4}
-              onChange={(event) =>
-                setRoomCode(
-                  event.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
-                )
+                onChange={(event) =>
+                setRoomCode(normalizeRoomCode(event.target.value))
               }
             />
             <Button disabled={!canJoin} onClick={handleJoin}>

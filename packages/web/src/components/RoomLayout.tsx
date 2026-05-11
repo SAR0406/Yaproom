@@ -8,6 +8,7 @@ import { RoomGuard } from "@/components/RoomGuard";
 import { RoomCodeBlock } from "@/components/RoomCodeBlock";
 import { Badge } from "@/components/Badge";
 import { joinRoom } from "@/lib/roomActions";
+import { normalizeRoomCode } from "@/lib/roomCode";
 import { useRoomStore } from "@/stores/roomStore";
 
 export function RoomLayout({
@@ -17,7 +18,7 @@ export function RoomLayout({
 }) {
   const roomInStore = useRoomStore((state) => state.room);
   const params = useParams();
-  const code = params.code as string;
+  const code = normalizeRoomCode((params.code as string) ?? "");
 
   useEffect(() => {
     if (roomInStore || !code) return;
