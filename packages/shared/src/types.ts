@@ -16,6 +16,7 @@ export type GamePhase =
   | 'lobby'
   | 'setup'
   | 'instructions'
+  | 'role'
   | 'round_start'
   | 'action'
   | 'player_action'

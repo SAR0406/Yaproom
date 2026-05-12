@@ -19,6 +19,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 4000,
       round_start: 3000,
       action: 120000,
       player_action: 120000, // 2 min per description round
@@ -42,6 +43,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 4000,
       round_start: 3000,
       action: 90000,
       player_action: 90000,
@@ -65,6 +67,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 90000,
       player_action: 90000,
@@ -88,6 +91,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 90000,
       player_action: 90000, // 1.5 min per turn
@@ -111,6 +115,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 60000,
       player_action: 60000, // 1 min to answer
@@ -134,6 +139,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 120000,
       player_action: 120000, // 2 min per turn (clue + guesses)
@@ -157,6 +163,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 90000,
       player_action: 90000, // 1.5 min to submit confession
@@ -180,6 +187,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 60000,
       player_action: 60000,
