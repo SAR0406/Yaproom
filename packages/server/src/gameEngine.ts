@@ -196,10 +196,21 @@ function scoreRound(room: RoomState, round: RoundState): void {
 
     if (votedOut) {
       for (const player of room.players) {
-        if (player.id !== imposterId) applyScore(room, player.id, 2);
+        if (player.id !== imposterId) {
+          applyScore(room, player.id, 4);
+        }
+      }
+      if (imposterId) {
+        applyScore(room, imposterId, -1);
       }
     } else if (imposterId) {
-      applyScore(room, imposterId, 3);
+      for (const player of room.players) {
+        if (player.id === imposterId) {
+          applyScore(room, player.id, 4);
+        } else {
+          applyScore(room, player.id, -1);
+        }
+      }
     }
   }
 

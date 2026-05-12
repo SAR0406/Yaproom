@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect } from "react";
-import { getSocket } from "@/lib/socket";
+import { getSocket, initializeSocket } from "@/lib/socket";
 import { useRoomStore } from "@/stores/roomStore";
 
 export function SocketProvider({
@@ -16,7 +16,7 @@ export function SocketProvider({
   const setConnected = useRoomStore((state) => state.setConnected);
 
   useEffect(() => {
-    const socket = getSocket();
+    const socket = getSocket() ?? initializeSocket();
     if (!socket) return;
 
     socket.connect();

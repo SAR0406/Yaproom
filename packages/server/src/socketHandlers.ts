@@ -11,6 +11,7 @@ import type {
   RoomSettings,
   RoomState,
   ServerToClientEvents,
+  VoiceSignalPayload,
   ErrorCode
 } from '@yapzi/shared';
 import { createGameSession, advancePhase } from './gameEngine.js';
@@ -295,6 +296,27 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
       await recordRoomEvent(room.id, 'chat:send', {
         playerId: sender.id,
         hasMeme: Boolean(memeUrl)
+      });
+    });
+
+    socket.on('voice:signal', async (payload: VoiceSignalPayload) => {
+      const room = await getRoomFromSocket(socket);
+      if (!room || !room.settings.voiceEnabled) {
+        return;
+      }
+
+      const sender = room.players.find((player) => player.id === socket.data.playerId);
+      if (!sender || payload.fromPlayerId !== sender.id || sender.isMuted) {
+        return;
+      }
+
+      if (payload.toPlayerId && !room.players.some((player) => player.id === payload.toPlayerId)) {
+        return;
+      }
+
+      socket.to(room.code).emit('voice:signal', {
+        ...payload,
+        fromPlayerId: sender.id
       });
     });
 

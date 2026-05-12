@@ -10,7 +10,8 @@ import type {
   ConfessionSubmitPayload,
   DrawPathPayload,
   RoomStatus,
-  ChatSendPayload
+  ChatSendPayload,
+  VoiceSignalPayload
 } from '@yapzi/shared';
 import { getSocket } from '@/lib/socket';
 
@@ -75,6 +76,11 @@ export function sendReaction(playerId: string, reaction: string) {
 export function sendChat(payload: ChatSendPayload) {
   const socket = getSocket();
   socket?.emit('chat:send', payload);
+}
+
+export function sendVoiceSignal(payload: VoiceSignalPayload) {
+  const socket = getSocket();
+  socket?.emit('voice:signal', payload);
 }
 
 export function submitVote(payload: VoteSubmitPayload) {

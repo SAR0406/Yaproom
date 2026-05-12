@@ -80,6 +80,28 @@ export interface ChatSendPayload {
   memeUrl?: string;
 }
 
+export type VoiceSignalKind = 'join' | 'offer' | 'answer' | 'ice' | 'leave';
+
+export interface VoiceSessionDescription {
+  type: 'offer' | 'answer' | 'pranswer' | 'rollback';
+  sdp?: string;
+}
+
+export interface VoiceIceCandidate {
+  candidate: string;
+  sdpMid?: string | null;
+  sdpMLineIndex?: number | null;
+  usernameFragment?: string | null;
+}
+
+export interface VoiceSignalPayload {
+  fromPlayerId: string;
+  toPlayerId?: string;
+  kind: VoiceSignalKind;
+  sdp?: VoiceSessionDescription;
+  candidate?: VoiceIceCandidate;
+}
+
 export interface AdminActionPayload {
   adminId: string;
   targetId: string;
@@ -102,6 +124,7 @@ export interface ClientToServerEvents {
   'draw:path': (payload: DrawPathPayload) => void;
   'reaction:send': (payload: ReactionSendPayload) => void;
   'chat:send': (payload: ChatSendPayload) => void;
+  'voice:signal': (payload: VoiceSignalPayload) => void;
   'admin:kick': (payload: AdminActionPayload) => void;
   'admin:mute': (payload: AdminActionPayload) => void;
   'admin:ban': (payload: AdminActionPayload) => void;
@@ -117,5 +140,6 @@ export interface ServerToClientEvents {
   'game:ended': (room: RoomState) => void;
   'reaction:receive': (payload: ReactionSendPayload) => void;
   'chat:receive': (payload: ChatMessage) => void;
+  'voice:signal': (payload: VoiceSignalPayload) => void;
   'reconnect:sync': (payload: RoomSyncPayload) => void;
 }
