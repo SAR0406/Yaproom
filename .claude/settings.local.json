@@ -3,5 +3,6 @@
     "allow": [
       "Bash(git check-ignore *)"
     ]
-  }
+  },
+  "outputStyle": "default"
 }
