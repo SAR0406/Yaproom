@@ -13,18 +13,21 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-2xl border-[3px] border-black font-black text-black transition-all active:translate-x-1 active:translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/60 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:translate-x-0 disabled:active:translate-y-0";
+    "inline-flex items-center justify-center rounded-2xl border px-4 font-black uppercase tracking-[0.08em] text-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none";
   const variants: Record<string, string> = {
-    primary: "bg-cyan-300 shadow-[6px_6px_0_0_#000] hover:-translate-y-0.5",
+    primary:
+      "border-cyan-300/60 bg-cyan-400/15 shadow-[0_0_0_1px_rgba(0,245,255,0.25),0_0_24px_rgba(0,245,255,0.22)] hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-cyan-300/20 active:translate-y-0 active:scale-[0.99]",
     secondary:
-      "bg-lime-300 shadow-[6px_6px_0_0_#000] hover:-translate-y-0.5",
-    ghost: "bg-white shadow-[6px_6px_0_0_#000] hover:-translate-y-0.5",
-    danger: "bg-rose-300 shadow-[6px_6px_0_0_#000] hover:-translate-y-0.5",
+      "border-fuchsia-300/60 bg-fuchsia-500/16 shadow-[0_0_0_1px_rgba(255,0,110,0.24),0_0_24px_rgba(255,0,110,0.2)] hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-fuchsia-400/22 active:translate-y-0 active:scale-[0.99]",
+    ghost:
+      "border-slate-300/30 bg-slate-500/10 text-slate-100 shadow-[0_0_0_1px_rgba(148,163,184,0.2)] hover:-translate-y-0.5 hover:bg-slate-500/18",
+    danger:
+      "border-rose-300/60 bg-rose-500/16 shadow-[0_0_0_1px_rgba(255,77,109,0.24),0_0_24px_rgba(255,77,109,0.16)] hover:-translate-y-0.5 hover:bg-rose-400/22",
   };
   const sizes: Record<string, string> = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-5 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: "py-2 text-xs",
+    md: "py-2.5 text-sm",
+    lg: "py-3 text-base",
   };
 
   return (

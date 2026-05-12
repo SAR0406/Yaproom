@@ -1,16 +1,22 @@
+-- Yaproom Database Schema
+-- Production-ready PostgreSQL schema for multiplayer party games
+
+-- ============================================================================
+-- USERS TABLE
+-- ============================================================================
+
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY,
-  username TEXT UNIQUE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username VARCHAR(255) UNIQUE,
+  email VARCHAR(255) UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_active BOOLEAN DEFAULT true,
+  last_login TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS guest_sessions (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-  nickname TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  expires_at TIMESTAMPTZ
-);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
 
 CREATE TABLE IF NOT EXISTS rooms (
   id UUID PRIMARY KEY,

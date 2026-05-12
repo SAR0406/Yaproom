@@ -2,36 +2,38 @@
 
 :root {
   color-scheme: dark;
-  --bg: #0B0F1A;
-  --surface: #121A2A;
-  --surface2: #172033;
-  --purple: #8b5cf6;
-  --purple-glow: rgba(139, 92, 246, 0.3);
-  --cyan: #22d3ee;
-  --cyan-glow: rgba(34, 211, 238, 0.25);
-  --pink: #f472b6;
-  --pink-glow: rgba(244, 114, 182, 0.25);
-  --green: #10b981;
-  --amber: #f59e0b;
-  --red: #ef4444;
+  --bg: #0a0e27;
+  --surface: #101935;
+  --surface2: #16244a;
+  --cyan: #00f5ff;
+  --cyan-glow: rgba(0, 245, 255, 0.28);
+  --magenta: #ff006e;
+  --magenta-glow: rgba(255, 0, 110, 0.28);
+  --lime: #39ff14;
+  --lime-glow: rgba(57, 255, 20, 0.26);
+  --amber: #ffb703;
+  --red: #ff4d6d;
   --text: #f8fafc;
-  --muted: #94A3B8;
-  --border: rgba(255, 255, 255, 0.08);
-  --glass: rgba(18, 26, 42, 0.6);
+  --muted: #9fb2d9;
+  --border: rgba(0, 245, 255, 0.2);
+  --glass: rgba(16, 25, 53, 0.62);
+  --shadow-soft: 0 0 24px rgba(0, 245, 255, 0.14);
+  --shadow-medium: 0 0 36px rgba(255, 0, 110, 0.16);
+  --shadow-strong: 0 0 52px rgba(57, 255, 20, 0.2);
 }
 
 @theme {
-  --color-background: #0b0f1a;
-  --color-surface: #121a2a;
-  --color-surface-muted: #172033;
-  --color-primary: #8b5cf6;
-  --color-secondary: #22d3ee;
-  --color-pink: #f472b6;
-  --color-positive: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-background: #0a0e27;
+  --color-surface: #101935;
+  --color-surface-muted: #16244a;
+  --color-primary: #00f5ff;
+  --color-secondary: #ff006e;
+  --color-pink: #ff006e;
+  --color-positive: #39ff14;
+  --color-warning: #ffb703;
+  --color-danger: #ff4d6d;
   --color-foreground: #f8fafc;
-  --color-muted: #94a3b8;
+  --color-muted: #9fb2d9;
   --font-sans: var(--font-dm-sans);
   --font-display: var(--font-bebas-neue);
   --font-mono: var(--font-jetbrains-mono);
@@ -46,9 +48,11 @@
     @apply bg-background text-foreground font-sans min-h-full;
     font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
     background-image:
-      radial-gradient(circle at 20% 10%, rgba(34, 211, 238, 0.2), transparent 34%),
-      radial-gradient(circle at 80% 0%, rgba(244, 114, 182, 0.18), transparent 38%),
-      radial-gradient(circle at 50% 100%, rgba(139, 92, 246, 0.3), transparent 42%);
+      radial-gradient(circle at 12% 10%, rgba(0, 245, 255, 0.14), transparent 30%),
+      radial-gradient(circle at 82% 4%, rgba(255, 0, 110, 0.16), transparent 34%),
+      radial-gradient(circle at 40% 96%, rgba(57, 255, 20, 0.12), transparent 32%),
+      linear-gradient(160deg, #090b1d 0%, #0a0e27 45%, #0c1435 100%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4 {
@@ -59,13 +63,27 @@
 @layer utilities {
   .glass-card {
     backdrop-filter: blur(20px);
-    background: rgba(18, 26, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(16, 25, 53, 0.62);
+    border: 1px solid rgba(0, 245, 255, 0.2);
     border-radius: 20px;
+    box-shadow: var(--shadow-soft);
   }
 
   .brutal-input {
-    @apply rounded-2xl border-[3px] border-black bg-white px-4 py-3 text-black placeholder:text-black/50 shadow-[4px_4px_0_0_#000] transition-transform focus:-translate-y-0.5 focus:outline-none;
+    @apply rounded-2xl border border-cyan-300/35 bg-[#0f1838] px-4 py-3 text-white placeholder:text-[#96a8cf] transition-all focus:outline-none;
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 245, 255, 0.1),
+      0 0 0 1px rgba(0, 245, 255, 0.08),
+      0 0 18px rgba(0, 245, 255, 0.09);
+  }
+
+  .brutal-input:focus {
+    transform: translateY(-1px) scale(1.005);
+    border-color: rgba(0, 245, 255, 0.8);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 245, 255, 0.5),
+      0 0 0 1px rgba(0, 245, 255, 0.4),
+      0 0 28px rgba(0, 245, 255, 0.24);
   }
 
   .neon-hover {
@@ -76,12 +94,57 @@
   }
 
   .neon-hover:hover {
-    border-color: rgba(139, 92, 246, 0.35);
+    border-color: rgba(0, 245, 255, 0.45);
     box-shadow:
-      0 0 0 1px rgba(139, 92, 246, 0.25),
-      0 0 22px rgba(34, 211, 238, 0.25),
-      0 0 42px rgba(244, 114, 182, 0.18);
-    transform: translateY(-2px);
+      0 0 0 1px rgba(0, 245, 255, 0.4),
+      0 0 20px rgba(0, 245, 255, 0.2),
+      0 0 42px rgba(255, 0, 110, 0.18);
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .terminal-panel {
+    background: linear-gradient(140deg, rgba(13, 21, 46, 0.82), rgba(10, 16, 39, 0.92));
+    border: 1px solid rgba(0, 245, 255, 0.35);
+    border-radius: 24px;
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 245, 255, 0.08),
+      0 0 36px rgba(0, 245, 255, 0.13);
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--lime);
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.72);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .action-stream-line {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+
+  .action-stream-line::before {
+    content: '';
+    position: absolute;
+    top: 0.35rem;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--cyan);
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.7);
+  }
+
+  .action-stream-line::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0.95rem;
+    bottom: -0.9rem;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(0, 245, 255, 0.55), rgba(0, 245, 255, 0));
   }
 
   .shimmer-text {
@@ -199,11 +262,11 @@
 @keyframes pulse-dot {
   0%, 100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.55);
   }
   50% {
     opacity: 0.8;
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 8px rgba(57, 255, 20, 0);
   }
 }
 
@@ -236,10 +299,10 @@
 
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.1);
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.14);
   }
   50% {
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+    box-shadow: 0 0 28px rgba(0, 245, 255, 0.34);
   }
 }
 
@@ -249,5 +312,20 @@
   }
   to {
     transform: scaleX(1);
+  }
+}
+
+@media (max-width: 767px) {
+  .terminal-panel {
+    border-radius: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
