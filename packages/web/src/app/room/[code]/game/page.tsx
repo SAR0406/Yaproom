@@ -76,11 +76,18 @@ export default function GamePage() {
 
       peer.onicecandidate = (event) => {
         if (!event.candidate || !playerId) return;
+        const rawCandidate = event.candidate.toJSON();
+        if (!rawCandidate.candidate) return;
         const payload: VoiceSignalPayload = {
           fromPlayerId: playerId,
           toPlayerId: remotePlayerId,
           kind: 'ice',
-          candidate: event.candidate.toJSON()
+          candidate: {
+            candidate: rawCandidate.candidate,
+            sdpMid: rawCandidate.sdpMid ?? null,
+            sdpMLineIndex: rawCandidate.sdpMLineIndex ?? null,
+            usernameFragment: rawCandidate.usernameFragment ?? null
+          }
         };
         sendVoiceSignal(payload);
       };

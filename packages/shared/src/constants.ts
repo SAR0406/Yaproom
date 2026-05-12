@@ -18,10 +18,62 @@ export const GAME_RULES: Record<GameType, GameRules> = {
     phaseTimeouts: {
       lobby: 0,
       setup: 2000,
+      instructions: 2000,
       round_start: 3000,
+      action: 120000,
       player_action: 120000, // 2 min per description round
+      timer: 30000,
+      guess: 60000,
       voting: 60000, // 1 min voting
+      vote: 60000,
       reveal: 10000,
+      recap: 5000,
+      scoring: 5000,
+      next_round: 3000,
+      match_end: 10000,
+    },
+  },
+  imposter: {
+    minPlayers: 3,
+    maxPlayers: 20,
+    defaultPlayers: 8,
+    roundDuration: 300000,
+    phaseTimeouts: {
+      lobby: 0,
+      setup: 2000,
+      instructions: 2000,
+      round_start: 3000,
+      action: 90000,
+      player_action: 90000,
+      timer: 30000,
+      guess: 45000,
+      voting: 60000,
+      vote: 60000,
+      reveal: 10000,
+      recap: 5000,
+      scoring: 5000,
+      next_round: 3000,
+      match_end: 10000,
+    },
+  },
+  drawing: {
+    minPlayers: 3,
+    maxPlayers: 12,
+    defaultPlayers: 8,
+    roundDuration: 300000,
+    phaseTimeouts: {
+      lobby: 0,
+      setup: 2000,
+      instructions: 2000,
+      round_start: 3000,
+      action: 90000,
+      player_action: 90000,
+      timer: 30000,
+      guess: 60000,
+      voting: 0,
+      vote: 0,
+      reveal: 15000,
+      recap: 5000,
       scoring: 5000,
       next_round: 3000,
       match_end: 10000,
@@ -35,10 +87,16 @@ export const GAME_RULES: Record<GameType, GameRules> = {
     phaseTimeouts: {
       lobby: 0,
       setup: 2000,
+      instructions: 2000,
       round_start: 3000,
+      action: 90000,
       player_action: 90000, // 1.5 min per turn
+      timer: 30000,
+      guess: 60000,
       voting: 0,
+      vote: 0,
       reveal: 20000,
+      recap: 5000,
       scoring: 5000,
       next_round: 3000,
       match_end: 10000,
@@ -52,10 +110,16 @@ export const GAME_RULES: Record<GameType, GameRules> = {
     phaseTimeouts: {
       lobby: 0,
       setup: 2000,
+      instructions: 2000,
       round_start: 3000,
+      action: 60000,
       player_action: 60000, // 1 min to answer
+      timer: 30000,
+      guess: 45000,
       voting: 45000, // 45 sec to vote
+      vote: 45000,
       reveal: 10000,
+      recap: 5000,
       scoring: 5000,
       next_round: 3000,
       match_end: 10000,
@@ -69,10 +133,16 @@ export const GAME_RULES: Record<GameType, GameRules> = {
     phaseTimeouts: {
       lobby: 0,
       setup: 2000,
+      instructions: 2000,
       round_start: 3000,
+      action: 120000,
       player_action: 120000, // 2 min per turn (clue + guesses)
+      timer: 30000,
+      guess: 60000,
       voting: 0,
+      vote: 0,
       reveal: 5000,
+      recap: 5000,
       scoring: 5000,
       next_round: 3000,
       match_end: 10000,
@@ -86,10 +156,62 @@ export const GAME_RULES: Record<GameType, GameRules> = {
     phaseTimeouts: {
       lobby: 0,
       setup: 2000,
+      instructions: 2000,
       round_start: 3000,
+      action: 90000,
       player_action: 90000, // 1.5 min to submit confession
+      timer: 30000,
+      guess: 60000,
       voting: 60000, // 1 min to vote
+      vote: 60000,
       reveal: 30000, // Reveal all confessions
+      recap: 5000,
+      scoring: 5000,
+      next_round: 3000,
+      match_end: 10000,
+    },
+  },
+  expose: {
+    minPlayers: 3,
+    maxPlayers: 20,
+    defaultPlayers: 8,
+    roundDuration: 240000,
+    phaseTimeouts: {
+      lobby: 0,
+      setup: 2000,
+      instructions: 2000,
+      round_start: 3000,
+      action: 60000,
+      player_action: 60000,
+      timer: 30000,
+      guess: 45000,
+      voting: 45000,
+      vote: 45000,
+      reveal: 15000,
+      recap: 5000,
+      scoring: 5000,
+      next_round: 3000,
+      match_end: 10000,
+    },
+  },
+  split: {
+    minPlayers: 2,
+    maxPlayers: 20,
+    defaultPlayers: 8,
+    roundDuration: 240000,
+    phaseTimeouts: {
+      lobby: 0,
+      setup: 2000,
+      instructions: 2000,
+      round_start: 3000,
+      action: 60000,
+      player_action: 60000,
+      timer: 30000,
+      guess: 45000,
+      voting: 30000,
+      vote: 30000,
+      reveal: 10000,
+      recap: 5000,
       scoring: 5000,
       next_round: 3000,
       match_end: 10000,
@@ -123,6 +245,16 @@ export const GAME_DESCRIPTIONS: Record<GameType, { name: string; description: st
     description:
       'A hidden-role deduction game. One word divides civilians from spies. Can you spot the imposters?',
   },
+  imposter: {
+    name: 'Imposter',
+    description:
+      'One player gets a slightly different word. Blend in, discuss, and vote out the imposter.',
+  },
+  drawing: {
+    name: 'Drawing',
+    description:
+      'One player draws while everyone else races to guess the prompt before time runs out.',
+  },
   'drawing-telephone': {
     name: 'Drawing Telephone',
     description:
@@ -142,6 +274,16 @@ export const GAME_DESCRIPTIONS: Record<GameType, { name: string; description: st
     name: 'Confession',
     description:
       'Submit anonymous confessions, vote on the wildest, then guess who said what. Full of surprises!',
+  },
+  expose: {
+    name: 'Expose',
+    description:
+      'Cast suspicion, expose the most suspicious player, and survive the social chaos.',
+  },
+  split: {
+    name: 'Split or Steal',
+    description:
+      'Choose split or steal in tense pairs. Trust can earn points, betrayal can win it all.',
   },
 };
 
