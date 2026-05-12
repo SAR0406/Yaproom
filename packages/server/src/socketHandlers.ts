@@ -545,7 +545,11 @@ function sanitizeSettings(settings: RoomSettings): RoomSettings {
   return {
     ...settings,
     maxPlayers: clamp(settings.maxPlayers, MIN_MAX_PLAYERS, MAX_MAX_PLAYERS),
-    roundLengthSec: clamp(settings.roundLengthSec, MIN_ROUND_LENGTH_SEC, MAX_ROUND_LENGTH_SEC)
+    roundLengthSec: clamp(
+      settings.roundLengthSec ?? MIN_ROUND_LENGTH_SEC,
+      MIN_ROUND_LENGTH_SEC,
+      MAX_ROUND_LENGTH_SEC
+    )
   };
 }
 

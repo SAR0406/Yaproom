@@ -211,6 +211,7 @@ export const GAME_RULES: Record<GameType, GameRules> = {
       lobby: 0,
       setup: 2000,
       instructions: 2000,
+      role: 3000,
       round_start: 3000,
       action: 60000,
       player_action: 60000,
