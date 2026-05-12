@@ -7,15 +7,24 @@
 // GAME TYPES
 // ============================================================================
 
-export type GameType = 'undercover' | 'drawing-telephone' | 'quiplash' | 'codenames' | 'confession';
+export type GameType = 'undercover' | 'imposter' | 'drawing' | 'drawing-telephone' | 'quiplash' | 'codenames' | 'confession' | 'expose' | 'split';
+
+// Backwards-compatible alias used widely across the codebase
+export type GameMode = GameType;
 
 export type GamePhase =
   | 'lobby'
   | 'setup'
+  | 'instructions'
   | 'round_start'
+  | 'action'
   | 'player_action'
+  | 'timer'
+  | 'guess'
   | 'voting'
+  | 'vote'
   | 'reveal'
+  | 'recap'
   | 'scoring'
   | 'next_round'
   | 'match_end';
@@ -28,6 +37,8 @@ export interface GameRules {
   phaseTimeouts: Record<GamePhase, number>;
 }
 
+export type ChaosLevel = 'low' | 'medium' | 'high';
+
 // ============================================================================
 // PLAYER TYPES
 // ============================================================================
@@ -35,20 +46,23 @@ export interface GameRules {
 export type PlayerRole = 'host' | 'player' | 'spectator';
 export type PlayerStatus = 'connected' | 'disconnected' | 'reconnecting' | 'eliminated' | 'idle';
 
-export interface Player {
+// Concrete player shape used by the frontend and server stores
+export interface PlayerState {
   id: string;
-  name: string;
-  avatar: number; // 0-15, represents avatar index
-  role: PlayerRole;
-  status: PlayerStatus;
-  joinedAt: number; // timestamp
-  lastSeenAt: number; // timestamp
-  score: number; // current round score
-  totalScore: number; // cumulative score
+  nickname: string;
+  avatarKey?: string | null;
+  color: string;
+  isHost: boolean;
   isReady: boolean;
-  color: string; // hex color for UI
-  sessionToken?: string; // For reconnection
+  isConnected: boolean;
+  isMuted: boolean;
+  isBanned: boolean;
+  score: number;
+  lastActiveAt: string;
 }
+
+// Legacy alias for earlier code
+export type Player = PlayerState;
 
 export interface PlayerSecret {
   playerId: string;
@@ -72,15 +86,30 @@ export interface RoomConfig {
   expiresAt: number; // Auto-delete after X hours
 }
 
-export interface RoomState {
+export interface RoomSettings {
+  maxPlayers: number;
+  language?: string;
+  voiceEnabled?: boolean;
+  anonymousMode?: boolean;
+  chaosLevel?: 'low' | 'medium' | 'high';
+  roundLengthSec?: number;
+  autoRotate?: boolean;
+  allowLateJoin?: boolean;
+  allowSpectators?: boolean;
+  audienceMode?: boolean;
+}
+
+export type RoomStatus = 'open' | 'locked' | 'in_game' | 'lobby' | 'ended' | 'closed';
+
+export interface LegacyRoomState {
   config: RoomConfig;
   phase: GamePhase;
   phaseStartedAt: number;
   phaseEndsAt: number; // For client-side timers
   roundIndex: number;
   turnIndex: number;
-  players: Player[];
-  spectators: Player[];
+  players: PlayerState[];
+  spectators: PlayerState[];
   currentTurnPlayerId?: string;
   
   // Game-specific state (varies per game)
@@ -134,134 +163,8 @@ export interface GameAction {
   validationError?: string;
 }
 
-// ============================================================================
-// SOCKET EVENT TYPES
-// ============================================================================
-
-// Client → Server Events
-export interface ClientToServerEvents {
-  // Connection
-  'join_room': (data: {
-    roomCode: string;
-    playerName: string;
-    avatarIndex: number;
-  }, callback?: (error?: string | null, playerId?: string) => void) => void;
-  
-  'leave_room': (data: { reason: string }, callback?: () => void) => void;
-  
-  'reconnect_player': (data: {
-    roomCode: string;
-    playerId: string;
-    sessionToken: string;
-  }, callback?: (error?: string | null, state?: RoomState) => void) => void;
-  
-  // Actions
-  'ready_up': (data: { ready: boolean }, callback?: () => void) => void;
-  'start_game': (callback?: () => void) => void;
-  'next_round': (callback?: () => void) => void;
-  
-  // Game Actions
-  'submit_action': (data: {
-    type: string;
-    payload: any;
-  }, callback?: (error?: string | null) => void) => void;
-  
-  'submit_vote': (data: {
-    votedPlayerId: string;
-    reason?: string;
-  }, callback?: () => void) => void;
-  
-  'submit_guess': (data: {
-    guessText: string;
-  }, callback?: () => void) => void;
-  
-  'submit_drawing': (data: {
-    strokes: Stroke[];
-    isComplete: boolean;
-  }, callback?: () => void) => void;
-  
-  // Host Actions
-  'host_kick_player': (data: { playerId: string }, callback?: () => void) => void;
-  'host_promote_player': (data: { playerId: string }, callback?: () => void) => void;
-  'host_skip_phase': (callback?: () => void) => void;
-  'host_restart_game': (callback?: () => void) => void;
-  
-  // Reactions
-  'send_reaction': (data: { emoji: string }, callback?: () => void) => void;
-  
-  // Sync
-  'request_state_sync': (callback?: (state?: RoomState) => void) => void;
-}
-
-// Server → Client Events
-export interface ServerToClientEvents {
-  // Connection
-  'connection_established': (data: {
-    playerId: string;
-    sessionToken: string;
-  }) => void;
-  
-  'player_joined': (player: Player) => void;
-  'player_left': (data: { playerId: string; reason: string }) => void;
-  'player_reconnected': (player: Player) => void;
-  'player_disconnected': (data: { playerId: string; willReconnectIn: number }) => void;
-  
-  // State Updates
-  'room_state_updated': (state: RoomState) => void;
-  'phase_changed': (data: {
-    oldPhase: GamePhase;
-    newPhase: GamePhase;
-    phaseEndsAt: number;
-  }) => void;
-  
-  'player_updated': (player: Player) => void;
-  'players_list': (players: Player[]) => void;
-  
-  // Game Events
-  'round_started': (data: {
-    roundIndex: number;
-    phaseEndsAt: number;
-  }) => void;
-  
-  'turn_changed': (data: {
-    currentTurnPlayerId: string;
-    phaseEndsAt: number;
-  }) => void;
-  
-  'action_received': (data: {
-    actionId: string;
-    playerId: string;
-    success: boolean;
-  }) => void;
-  
-  'reveal_started': (data: any) => void;
-  'round_summary': (summary: RoundSummary) => void;
-  'match_ended': (data: {
-    winner?: string;
-    finalScores: Record<string, number>;
-    duration: number;
-  }) => void;
-  
-  // Reactions
-  'reaction_received': (data: {
-    playerId: string;
-    emoji: string;
-  }) => void;
-  
-  // Errors
-  'error': (data: {
-    code: string;
-    message: string;
-  }) => void;
-  
-  // Chat (if enabled)
-  'chat_message': (data: {
-    playerId: string;
-    playerName: string;
-    message: string;
-    timestamp: number;
-  }) => void;
-}
+// Note: socket event interfaces are defined in packages/shared/src/events.ts
+// to avoid duplicate exports across modules. Keep event contracts centralized there.
 
 // ============================================================================
 // DRAWING TYPES

@@ -1,4 +1,6 @@
-import { randomUUID } from 'node:crypto';
+function generateId(): string {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
 import type {
   ChaosEvent,
   ChaosLevel,
@@ -56,12 +58,12 @@ export function createGameSession(
   const round = createRound(mode, phases, 1, room);
 
   return {
-    id: randomUUID(),
+    id: generateId(),
     mode,
     phases,
     round,
     queue,
-    scoreboard: room.players.reduce<Record<string, number>>((acc, player) => {
+    scoreboard: room.players.reduce<Record<string, number>>((acc: Record<string, number>, player) => {
       acc[player.id] = player.score;
       return acc;
     }, {}),
@@ -112,7 +114,7 @@ function createRound(
 ): RoundState {
   const startedAt = new Date().toISOString();
   const round: RoundState = {
-    id: randomUUID(),
+    id: generateId(),
     number,
     mode,
     phase: phases[0] ?? 'instructions',
@@ -124,7 +126,7 @@ function createRound(
 
   if (mode === 'imposter') {
     const [commonWord, imposterWord] = pickRandom(imposterWordPairs);
-    const playerIds = room.players.map((player) => player.id);
+    const playerIds = room.players.map((player: any) => player.id);
     const imposter = playerIds.length ? pickRandom(playerIds) : room.hostId;
     round.payload = {
       commonWord,
@@ -267,7 +269,7 @@ function scoreRound(room: RoomState, round: RoundState): void {
 }
 
 function applyScore(room: RoomState, playerId: string, delta: number) {
-  room.players = room.players.map((player) =>
+  room.players = room.players.map((player: any) =>
     player.id === playerId
       ? {
           ...player,
@@ -303,7 +305,7 @@ function maybeTriggerChaosEvent(room: RoomState, nextPhase: GamePhase) {
 
   const event = pickRandom(chaosCatalog);
   const chaos: ChaosEvent = {
-    id: randomUUID(),
+    id: generateId(),
     type: event.type,
     label: event.label,
     description: event.description,
@@ -318,8 +320,8 @@ const CHAOS_PROBABILITY: Record<ChaosLevel, number> = {
   high: 0.28
 };
 
-function chaosProbability(level: ChaosLevel): number {
-  return CHAOS_PROBABILITY[level];
+function chaosProbability(level?: ChaosLevel): number {
+  return CHAOS_PROBABILITY[level ?? 'low'];
 }
 
 function pickRandom<T>(items: readonly T[]): T {
