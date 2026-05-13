@@ -54,9 +54,10 @@ export default function GamePage() {
   const localStreamRef = useRef<MediaStream | null>(null);
   const peersRef = useRef<Record<string, RTCPeerConnection>>({});
   const remoteAudioRef = useRef<Record<string, HTMLAudioElement>>({});
+  const activePlayerId = playerId ?? '';
 
   useEffect(() => {
-    if (!playerId) return;
+    if (!activePlayerId) return;
     const socket = getSocket();
     if (!socket) return;
 
@@ -126,7 +127,7 @@ export default function GamePage() {
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
         sendVoiceSignal({
-          fromPlayerId: playerId,
+          fromPlayerId: activePlayerId,
           toPlayerId: remotePlayerId,
           kind: 'offer',
           sdp: offer
@@ -140,7 +141,7 @@ export default function GamePage() {
         const answer = await peer.createAnswer();
         await peer.setLocalDescription(answer);
         sendVoiceSignal({
-          fromPlayerId: playerId,
+          fromPlayerId: activePlayerId,
           toPlayerId: remotePlayerId,
           kind: 'answer',
           sdp: answer
@@ -175,7 +176,7 @@ export default function GamePage() {
     return () => {
       socket.off('voice:signal', wrappedHandler);
     };
-  }, [playerId, voiceJoined]);
+  }, [activePlayerId, voiceJoined]);
 
   useEffect(() => {
     return () => {
@@ -190,7 +191,7 @@ export default function GamePage() {
   }, []);
 
   async function joinVoiceCall() {
-    if (!playerId) return;
+    if (!activePlayerId) return;
     const currentRoom = room;
     if (!currentRoom?.settings.voiceEnabled) {
       setVoiceStatus('Voice is disabled by host');
@@ -207,7 +208,7 @@ export default function GamePage() {
       setVoiceJoined(true);
       setVoiceStatus('Connected to team voice');
       sendVoiceSignal({
-        fromPlayerId: playerId,
+        fromPlayerId: activePlayerId,
         kind: 'join'
       });
     } catch {
@@ -216,9 +217,9 @@ export default function GamePage() {
   }
 
   function leaveVoiceCall() {
-    if (!playerId) return;
+    if (!activePlayerId) return;
     sendVoiceSignal({
-      fromPlayerId: playerId,
+      fromPlayerId: activePlayerId,
       kind: 'leave'
     });
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
