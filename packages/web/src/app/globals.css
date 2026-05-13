@@ -1208,44 +1208,51 @@
 
 :root {
   color-scheme: light;
-  --bg: #f7e85f;
-  --ink: #111111;
-  --panel: #ffffff;
-  --cyan: #64ddff;
-  --pink: #ff5ec8;
-  --green: #7cff76;
-  --orange: #ffb347;
-  --purple: #9d7cff;
-  --blue: #6ea8ff;
-  --gold: #ffd84f;
-  --shadow: 8px 8px 0 var(--ink);
-  --shadow-lg: 12px 12px 0 var(--ink);
-  --radius: 28px;
-  --radius-sm: 18px;
+  --bg: #f4ec8b;
+  --ink: #121212;
+  --panel: #fffdf7;
+  --cyan: #7be8ff;
+  --pink: #ff76c8;
+  --green: #86f36d;
+  --orange: #ffbf59;
+  --purple: #b19bff;
+  --blue: #8cb4ff;
+  --gold: #ffe05c;
+  --shadow: 10px 10px 0 var(--ink);
+  --shadow-lg: 14px 14px 0 var(--ink);
+  --radius: 30px;
+  --radius-sm: 20px;
 }
 
 @theme {
+  --color-background: #f4ec8b;
+  --color-foreground: #121212;
+  --color-muted: rgba(18, 18, 18, 0.62);
+  --color-primary: #7be8ff;
+  --color-secondary: #ff76c8;
+  --color-accent: #86f36d;
+
   --color-space-black: #111111;
-  --color-void: #0b0b0b;
-  --color-surface: #ffffff;
+  --color-void: #080808;
+  --color-surface: #fffdf7;
   --color-surface-card: #ffffff;
   --color-surface-glass: rgba(255, 255, 255, 0.92);
 
-  --color-neon-cyan: #64ddff;
-  --color-neon-cyan-dim: #4ac8ef;
-  --color-neon-magenta: #ff5ec8;
-  --color-neon-magenta-dim: #df48ad;
-  --color-neon-lime: #7cff76;
-  --color-neon-amber: #ffb347;
-  --color-neon-red: #ff6d6d;
+  --color-neon-cyan: #7be8ff;
+  --color-neon-cyan-dim: #59d4ef;
+  --color-neon-magenta: #ff76c8;
+  --color-neon-magenta-dim: #e45ab1;
+  --color-neon-lime: #86f36d;
+  --color-neon-amber: #ffbf59;
+  --color-neon-red: #ff7a73;
 
   --color-text-primary: #111111;
-  --color-text-secondary: rgba(17, 17, 17, 0.72);
-  --color-text-muted: rgba(17, 17, 17, 0.55);
+  --color-text-secondary: rgba(18, 18, 18, 0.78);
+  --color-text-muted: rgba(18, 18, 18, 0.58);
 
-  --color-border-subtle: rgba(17, 17, 17, 0.08);
-  --color-border-default: rgba(17, 17, 17, 0.16);
-  --color-border-glow: rgba(17, 17, 17, 0.24);
+  --color-border-subtle: rgba(18, 18, 18, 0.1);
+  --color-border-default: rgba(18, 18, 18, 0.18);
+  --color-border-glow: rgba(18, 18, 18, 0.24);
 
   --font-sans: var(--font-bebas-neue);
   --font-display: var(--font-bebas-neue);
@@ -1263,9 +1270,9 @@
     font-family: var(--font-bebas-neue), "Space Grotesk", system-ui, sans-serif;
     min-height: 100vh;
     background:
-      radial-gradient(circle at 10% 10%, rgba(100, 221, 255, 0.28), transparent 24%),
-      radial-gradient(circle at 90% 14%, rgba(255, 94, 200, 0.24), transparent 20%),
-      radial-gradient(circle at 80% 88%, rgba(124, 255, 118, 0.22), transparent 20%),
+      radial-gradient(circle at 10% 10%, rgba(123, 232, 255, 0.26), transparent 24%),
+      radial-gradient(circle at 90% 14%, rgba(255, 118, 200, 0.22), transparent 20%),
+      radial-gradient(circle at 80% 88%, rgba(134, 243, 109, 0.2), transparent 20%),
       linear-gradient(180deg, #fff6a8 0%, var(--bg) 100%);
     background-attachment: fixed;
   }
@@ -1304,7 +1311,7 @@
   }
 
   ::selection {
-    background: rgba(255, 216, 79, 0.8);
+    background: rgba(255, 224, 92, 0.82);
     color: var(--ink);
   }
 
@@ -1318,12 +1325,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.28);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.42);
+    background: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -1334,16 +1341,16 @@
 
 .app-shell {
   width: 100%;
-  max-width: 1500px;
+  max-width: 1520px;
   margin: 0 auto;
   display: flex;
-  gap: 22px;
+  gap: 18px;
   align-items: flex-start;
 }
 
 .app-sidebar {
-  width: 290px;
-  min-width: 290px;
+  width: 300px;
+  min-width: 300px;
 }
 
 .app-main {
@@ -1391,10 +1398,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 56px;
-  padding: 15px 18px;
+  min-height: 58px;
+  padding: 15px 20px;
   border: 4px solid #000;
-  border-radius: 18px;
+  border-radius: 20px;
   background: #fff;
   color: var(--ink);
   font-family: var(--font-bebas-neue), "Space Grotesk", system-ui, sans-serif;
@@ -1430,7 +1437,7 @@
 .btn-primary { background: var(--cyan); }
 .btn-secondary { background: var(--pink); }
 .btn-success { background: var(--green); }
-.btn-danger { background: #ff6d6d; }
+.btn-danger { background: #ff7171; }
 .btn-ghost { background: #fff; }
 .btn-sm { min-height: 44px; padding: 10px 14px; font-size: 0.92rem; }
 .btn-lg { min-height: 62px; padding: 16px 22px; font-size: 1.28rem; }
@@ -1441,7 +1448,7 @@
   min-height: 56px;
   padding: 14px 16px;
   border: 4px solid #000;
-  border-radius: 18px;
+  border-radius: 20px;
   background: #fff;
   color: var(--ink);
   font-family: "Space Grotesk", system-ui, sans-serif;
@@ -1551,7 +1558,7 @@
   position: relative;
   background: #fff;
   border: 4px solid #000;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 16px 18px;
   color: var(--ink);
   box-shadow: var(--shadow);
@@ -1700,12 +1707,12 @@
 .brutal-shell {
   position: relative;
   z-index: 1;
-  max-width: 1500px;
+  max-width: 1520px;
   margin: 0 auto;
-  padding: 22px;
+  padding: 20px;
   display: grid;
-  grid-template-columns: 290px minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 18px;
 }
 
 .brutal-panel {
@@ -1717,8 +1724,8 @@
 
 .brutal-sidebar {
   position: sticky;
-  top: 22px;
-  height: calc(100vh - 44px);
+  top: 20px;
+  height: calc(100vh - 40px);
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -1733,7 +1740,7 @@
   background: #111;
   color: #fff;
   border: 4px solid #111;
-  border-radius: 24px;
+  border-radius: 26px;
   padding: 16px;
   box-shadow: var(--shadow);
 }
@@ -1742,7 +1749,7 @@
   width: 62px;
   height: 62px;
   flex: 0 0 62px;
-  border-radius: 18px;
+  border-radius: 20px;
   background: var(--gold);
   border: 4px solid #000;
   display: grid;
@@ -1755,7 +1762,7 @@
 
 .brutal-brand h1 {
   margin: 0;
-  font-size: 1.22rem;
+  font-size: 1.25rem;
   line-height: 1;
   letter-spacing: 0.02em;
   font-weight: 900;
@@ -1774,7 +1781,7 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-radius: 24px;
+  border-radius: 26px;
   background: linear-gradient(135deg, #fff 0%, #fff9d1 100%);
   border: 4px solid #000;
   box-shadow: var(--shadow);
@@ -1812,7 +1819,7 @@
 .brutal-nav a {
   width: 100%;
   border: 4px solid #000;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 13px 14px;
   background: #fff;
   box-shadow: var(--shadow);
@@ -1867,7 +1874,7 @@
 }
 
 .brutal-topbar {
-  padding: 18px 20px;
+  padding: 18px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;

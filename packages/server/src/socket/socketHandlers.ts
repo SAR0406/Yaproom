@@ -6,6 +6,11 @@
 import type { Server, Socket } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents, RoomState } from '@yapzi/shared';
 import { roomManager } from '../core/rooms/RoomManager.js';
+import { TruthOrDareGame } from '../games/truth-or-dare/TruthOrDareGame.js';
+import { WouldYouRatherGame } from '../games/would-you-rather/WouldYouRatherGame.js';
+import { NeverHaveIEverGame } from '../games/never-have-i-ever/NeverHaveIEverGame.js';
+import { WhosMostLikelyGame } from '../games/whos-most-likely/WhosMostLikelyGame.js';
+import { GuessWhoSaidItGame } from '../games/guess-who-said-it/GuessWhoSaidItGame.js';
 
 interface PlayerSession {
   roomId: string;
@@ -332,6 +337,254 @@ export function registerSocketHandlers(
         }
       } catch (error) {
         console.error('[Socket] request_state_sync error:', error);
+      }
+    });
+
+    // ====================================================================
+    // PHASE 1 GAME HANDLERS
+    // ====================================================================
+
+    // --- Truth or Dare ---
+
+    socket.on('game:truth-or-dare:spin', async (callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as TruthOrDareGame;
+        const result = game.spin(session.playerId);
+        io.to(`room:${room.id}`).emit('game:truth-or-dare:spin-result', result);
+        callback?.(null, result);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:truth-or-dare:choose', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as TruthOrDareGame;
+        const prompt = game.choose(session.playerId, data.choice);
+        io.to(`room:${room.id}`).emit('game:truth-or-dare:prompt', { playerId: session.playerId, choice: data.choice, prompt });
+        callback?.(null, prompt);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:truth-or-dare:complete', async (callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as TruthOrDareGame;
+        game.complete(session.playerId);
+        io.to(`room:${room.id}`).emit('game:truth-or-dare:state', game.getState());
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:truth-or-dare:skip', async (callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as TruthOrDareGame;
+        game.skip(session.playerId);
+        io.to(`room:${room.id}`).emit('game:truth-or-dare:state', game.getState());
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:truth-or-dare:custom-prompt', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as TruthOrDareGame;
+        game.addCustomPrompt(session.playerId, data.text, data.type);
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:truth-or-dare:set-spice', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as TruthOrDareGame;
+        game.setSpiceLevel(data.level);
+        io.to(`room:${room.id}`).emit('game:truth-or-dare:state', game.getState());
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    // --- Would You Rather ---
+
+    socket.on('game:would-you-rather:vote', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as WouldYouRatherGame;
+        game.vote(session.playerId, data.choice);
+        io.to(`room:${room.id}`).emit('game:would-you-rather:state', game.getState());
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:would-you-rather:custom-prompt', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as WouldYouRatherGame;
+        game.addCustomPrompt(session.playerId, data.optionA, data.optionB);
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    // --- Never Have I Ever ---
+
+    socket.on('game:never-have-i-ever:finger-down', async (callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as NeverHaveIEverGame;
+        const result = game.fingerDown(session.playerId);
+        io.to(`room:${room.id}`).emit('game:never-have-i-ever:finger-update', result);
+        if (result.eliminated) {
+          io.to(`room:${room.id}`).emit('game:never-have-i-ever:eliminated', { playerId: session.playerId });
+        }
+        callback?.(null, result);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:never-have-i-ever:custom-prompt', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as NeverHaveIEverGame;
+        game.addCustomPrompt(session.playerId, data.text);
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    // --- Who's Most Likely To ---
+
+    socket.on('game:whos-most-likely:vote', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as WhosMostLikelyGame;
+        game.vote(session.playerId, data.targetPlayerId);
+        io.to(`room:${room.id}`).emit('game:whos-most-likely:state', game.getState());
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:whos-most-likely:custom-prompt', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as WhosMostLikelyGame;
+        game.addCustomPrompt(session.playerId, data.text);
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    // --- Guess Who Said It ---
+
+    socket.on('game:guess-who-said-it:submit-answer', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as GuessWhoSaidItGame;
+        game.submitAnswer(session.playerId, data.text);
+        io.to(`room:${room.id}`).emit('game:guess-who-said-it:state', game.getState());
+
+        // Auto-advance to guess phase when all answers submitted
+        if (game.allAnswersSubmitted()) {
+          const guessData = game.startGuessPhase();
+          io.to(`room:${room.id}`).emit('game:guess-who-said-it:phase', guessData);
+        }
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
+      }
+    });
+
+    socket.on('game:guess-who-said-it:submit-guess', async (data, callback) => {
+      try {
+        const session = playerSessions.get(socket.id);
+        if (!session) { callback?.('Not in a room'); return; }
+        const room = roomManager.getRoom(session.roomId);
+        if (!room) { callback?.('Room not found'); return; }
+
+        const game = room.getEngine() as unknown as GuessWhoSaidItGame;
+        game.submitGuess(session.playerId, data.guesses);
+
+        // Auto-reveal when all guesses submitted
+        if (game.allGuessesSubmitted()) {
+          const revealData = game.reveal();
+          io.to(`room:${room.id}`).emit('game:guess-who-said-it:reveal', revealData);
+        }
+        callback?.(null);
+      } catch (error) {
+        callback?.(String(error));
       }
     });
 

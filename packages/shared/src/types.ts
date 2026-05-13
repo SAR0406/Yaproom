@@ -7,7 +7,7 @@
 // GAME TYPES
 // ============================================================================
 
-export type GameType = 'undercover' | 'imposter' | 'drawing' | 'drawing-telephone' | 'quiplash' | 'codenames' | 'confession' | 'expose' | 'split';
+export type GameType = 'undercover' | 'imposter' | 'drawing' | 'drawing-telephone' | 'quiplash' | 'codenames' | 'confession' | 'expose' | 'split' | 'truth-or-dare' | 'would-you-rather' | 'never-have-i-ever' | 'whos-most-likely' | 'guess-who-said-it';
 
 // Backwards-compatible alias used widely across the codebase
 export type GameMode = GameType;
@@ -313,6 +313,130 @@ export interface Confession {
   authorId: string; // server-only until reveal
   votes: number;
   correctGuesses: string[]; // players who guessed correctly
+}
+
+// ============================================================================
+// PHASE 1 GAME TYPES
+// ============================================================================
+
+// Truth or Dare
+export type TruthOrDareSpiceLevel = 'family' | 'spicy' | 'savage';
+export type TruthOrDareChoice = 'truth' | 'dare';
+
+export interface TruthOrDarePrompt {
+  id: string;
+  text: string;
+  type: TruthOrDareChoice;
+  spiceLevel: TruthOrDareSpiceLevel;
+  category?: string;
+  isCustom?: boolean;
+  submittedBy?: string;
+}
+
+export interface TruthOrDareGameState {
+  spiceLevel: TruthOrDareSpiceLevel;
+  currentPlayerId: string | null;
+  currentChoice: TruthOrDareChoice | null;
+  currentPrompt: TruthOrDarePrompt | null;
+  usedPromptIds: string[];
+  customPrompts: TruthOrDarePrompt[];
+  playerOrder: string[];
+  turnIndex: number;
+  skippedThisTurn: boolean;
+  completedActions: Record<string, number>; // playerId -> count
+}
+
+// Would You Rather
+export interface WouldYouRatherPrompt {
+  id: string;
+  optionA: string;
+  optionB: string;
+  category?: string;
+  isCustom?: boolean;
+  submittedBy?: string;
+}
+
+export interface WouldYouRatherGameState {
+  currentPrompt: WouldYouRatherPrompt | null;
+  votes: Record<string, 'A' | 'B'>; // playerId -> choice
+  voteCounts: { A: number; B: number };
+  usedPromptIds: string[];
+  customPrompts: WouldYouRatherPrompt[];
+  roundNumber: number;
+  totalRounds: number;
+  revealed: boolean;
+}
+
+// Never Have I Ever
+export type NHIESpiceLevel = 'friendship' | 'spicy' | 'travel' | 'college';
+
+export interface NeverHaveIEverPrompt {
+  id: string;
+  text: string;
+  spiceLevel: NHIESpiceLevel;
+  isCustom?: boolean;
+  submittedBy?: string;
+}
+
+export interface NeverHaveIEverGameState {
+  currentPrompt: NeverHaveIEverPrompt | null;
+  currentPlayerId: string | null;
+  playerFingers: Record<string, number>; // playerId -> fingers remaining (starts at 5)
+  eliminatedPlayers: string[];
+  usedPromptIds: string[];
+  customPrompts: NeverHaveIEverPrompt[];
+  playerOrder: string[];
+  turnIndex: number;
+  roundNumber: number;
+  winner: string | null;
+}
+
+// Who's Most Likely To
+export interface WhosMostLikelyPrompt {
+  id: string;
+  text: string;
+  category?: string;
+  isCustom?: boolean;
+  submittedBy?: string;
+}
+
+export interface WhosMostLikelyGameState {
+  currentPrompt: WhosMostLikelyPrompt | null;
+  votes: Record<string, string>; // voterId -> targetPlayerId
+  voteCounts: Record<string, number>; // targetPlayerId -> count
+  usedPromptIds: string[];
+  customPrompts: WhosMostLikelyPrompt[];
+  roundNumber: number;
+  totalRounds: number;
+  revealed: boolean;
+}
+
+// Guess Who Said It
+export type GWSIPhase = 'submit' | 'guess' | 'reveal';
+
+export interface GuessWhoSaidItPrompt {
+  id: string;
+  text: string;
+  category?: string;
+}
+
+export interface GuessWhoSaidItAnswer {
+  id: string;
+  playerId: string; // server-only until reveal
+  text: string;
+  displayOrder: number;
+}
+
+export interface GuessWhoSaidItGameState {
+  currentPrompt: GuessWhoSaidItPrompt | null;
+  phase: GWSIPhase;
+  answers: GuessWhoSaidItAnswer[]; // collected in submit phase
+  guesses: Record<string, Record<string, string>>; // guesserId -> { answerId -> guessedPlayerId }
+  scores: Record<string, number>;
+  usedPromptIds: string[];
+  roundNumber: number;
+  totalRounds: number;
+  revealedAnswerIds: string[];
 }
 
 // ============================================================================

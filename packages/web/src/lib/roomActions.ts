@@ -11,7 +11,21 @@ import type {
   DrawPathPayload,
   RoomStatus,
   ChatSendPayload,
-  VoiceSignalPayload
+  VoiceSignalPayload,
+  TruthOrDareSpinPayload,
+  TruthOrDareChoicePayload,
+  TruthOrDareCompletePayload,
+  TruthOrDareSkipPayload,
+  TruthOrDareCustomPromptPayload,
+  TruthOrDareSetSpicePayload,
+  WouldYouRatherVotePayload,
+  WouldYouRatherCustomPromptPayload,
+  NeverHaveIEverFingerPayload,
+  NeverHaveIEverCustomPromptPayload,
+  WhosMostLikelyVotePayload,
+  WhosMostLikelyCustomPromptPayload,
+  GuessWhoSaidItAnswerPayload,
+  GuessWhoSaidItGuessPayload,
 } from '@yapzi/shared';
 import { getSocket } from '@/lib/socket';
 
@@ -116,4 +130,83 @@ export function adminMute(payload: AdminActionPayload) {
 export function adminBan(payload: AdminActionPayload) {
   const socket = getSocket();
   socket?.emit('admin:ban', payload);
+}
+
+// ============================================================================
+// PHASE 1 GAME ACTIONS
+// ============================================================================
+
+// Truth or Dare
+export function truthOrDareSpin(payload: TruthOrDareSpinPayload) {
+  const socket = getSocket();
+  socket?.emit('game:truth-or-dare:spin', payload);
+}
+
+export function truthOrDareChoose(payload: TruthOrDareChoicePayload) {
+  const socket = getSocket();
+  socket?.emit('game:truth-or-dare:choose', payload);
+}
+
+export function truthOrDareComplete(payload: TruthOrDareCompletePayload) {
+  const socket = getSocket();
+  socket?.emit('game:truth-or-dare:complete', payload);
+}
+
+export function truthOrDareSkip(payload: TruthOrDareSkipPayload) {
+  const socket = getSocket();
+  socket?.emit('game:truth-or-dare:skip', payload);
+}
+
+export function truthOrDareCustomPrompt(payload: TruthOrDareCustomPromptPayload) {
+  const socket = getSocket();
+  socket?.emit('game:truth-or-dare:custom-prompt', payload);
+}
+
+export function truthOrDareSetSpice(payload: TruthOrDareSetSpicePayload) {
+  const socket = getSocket();
+  socket?.emit('game:truth-or-dare:set-spice', payload);
+}
+
+// Would You Rather
+export function wouldYouRatherVote(payload: WouldYouRatherVotePayload) {
+  const socket = getSocket();
+  socket?.emit('game:would-you-rather:vote', payload);
+}
+
+export function wouldYouRatherCustomPrompt(payload: WouldYouRatherCustomPromptPayload) {
+  const socket = getSocket();
+  socket?.emit('game:would-you-rather:custom-prompt', payload);
+}
+
+// Never Have I Ever
+export function neverHaveIEverFingerDown(payload: NeverHaveIEverFingerPayload) {
+  const socket = getSocket();
+  socket?.emit('game:never-have-i-ever:finger-down', payload);
+}
+
+export function neverHaveIEverCustomPrompt(payload: NeverHaveIEverCustomPromptPayload) {
+  const socket = getSocket();
+  socket?.emit('game:never-have-i-ever:custom-prompt', payload);
+}
+
+// Who's Most Likely To
+export function whosMostLikelyVote(payload: WhosMostLikelyVotePayload) {
+  const socket = getSocket();
+  socket?.emit('game:whos-most-likely:vote', payload);
+}
+
+export function whosMostLikelyCustomPrompt(payload: WhosMostLikelyCustomPromptPayload) {
+  const socket = getSocket();
+  socket?.emit('game:whos-most-likely:custom-prompt', payload);
+}
+
+// Guess Who Said It
+export function guessWhoSaidItSubmitAnswer(payload: GuessWhoSaidItAnswerPayload) {
+  const socket = getSocket();
+  socket?.emit('game:guess-who-said-it:submit-answer', payload);
+}
+
+export function guessWhoSaidItSubmitGuess(payload: GuessWhoSaidItGuessPayload) {
+  const socket = getSocket();
+  socket?.emit('game:guess-who-said-it:submit-guess', payload);
 }

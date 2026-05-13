@@ -4,8 +4,8 @@ import './globals.css';
 import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
-  title: 'Yapzi — Join the chaos',
-  description: 'Room-based multiplayer party games with instant friend group chaos.'
+  title: 'Yaproom — Loud room games, rebuilt',
+  description: 'Neobrutalist multiplayer party games with room control, live play, and bold shared visuals.'
 };
 
 export default function RootLayout({
@@ -19,11 +19,9 @@ export default function RootLayout({
       className="h-full antialiased"
       style={
         {
-          '--font-bebas-neue': '"Space Grotesk", system-ui, sans-serif',
-          '--font-dm-sans':
-            '"Space Grotesk", system-ui, sans-serif',
-          '--font-jetbrains-mono':
-            '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+          '--font-bebas-neue': '"Arial Black", "Impact", "Trebuchet MS", system-ui, sans-serif',
+          '--font-dm-sans': '"Space Grotesk", "Trebuchet MS", system-ui, sans-serif',
+          '--font-jetbrains-mono': '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
         } as CSSProperties
       }
     >

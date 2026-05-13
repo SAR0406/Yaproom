@@ -21,6 +21,11 @@ export const gameModeLabels: Record<GameMode, string> = {
   expose: "Expose Vote",
   confession: "Confession",
   split: "Split or Steal",
+  "truth-or-dare": "Truth or Dare",
+  "would-you-rather": "Would You Rather",
+  "never-have-i-ever": "Never Have I Ever",
+  "whos-most-likely": "Who's Most Likely To",
+  "guess-who-said-it": "Guess Who Said It",
 };
 
 export function describePhase(phase: GamePhase) {

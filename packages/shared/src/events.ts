@@ -7,7 +7,10 @@ import type {
   RoomSettings,
   RoomState,
   RoundState,
-  RoomStatus
+  RoomStatus,
+  TruthOrDareChoice,
+  TruthOrDareSpiceLevel,
+  GWSIPhase,
 } from './types';
 
 export interface RoomCreatePayload {
@@ -108,6 +111,82 @@ export interface AdminActionPayload {
   reason?: string;
 }
 
+// ============================================================================
+// PHASE 1 GAME EVENT PAYLOADS
+// ============================================================================
+
+// Truth or Dare
+export interface TruthOrDareSpinPayload {
+  playerId: string;
+}
+
+export interface TruthOrDareChoicePayload {
+  playerId: string;
+  choice: TruthOrDareChoice;
+}
+
+export interface TruthOrDareCompletePayload {
+  playerId: string;
+}
+
+export interface TruthOrDareSkipPayload {
+  playerId: string;
+}
+
+export interface TruthOrDareCustomPromptPayload {
+  playerId: string;
+  text: string;
+  type: TruthOrDareChoice;
+}
+
+export interface TruthOrDareSetSpicePayload {
+  spiceLevel: TruthOrDareSpiceLevel;
+}
+
+// Would You Rather
+export interface WouldYouRatherVotePayload {
+  playerId: string;
+  choice: 'A' | 'B';
+}
+
+export interface WouldYouRatherCustomPromptPayload {
+  playerId: string;
+  optionA: string;
+  optionB: string;
+}
+
+// Never Have I Ever
+export interface NeverHaveIEverFingerPayload {
+  playerId: string;
+}
+
+export interface NeverHaveIEverCustomPromptPayload {
+  playerId: string;
+  text: string;
+}
+
+// Who's Most Likely To
+export interface WhosMostLikelyVotePayload {
+  playerId: string;
+  targetPlayerId: string;
+}
+
+export interface WhosMostLikelyCustomPromptPayload {
+  playerId: string;
+  text: string;
+}
+
+// Guess Who Said It
+export interface GuessWhoSaidItAnswerPayload {
+  playerId: string;
+  text: string;
+}
+
+export interface GuessWhoSaidItGuessPayload {
+  playerId: string;
+  guesses: Record<string, string>; // answerId -> guessedPlayerId
+}
+
 export interface ClientToServerEvents {
   'room:create': (payload: RoomCreatePayload) => void;
   'room:join': (payload: RoomJoinPayload) => void;
@@ -128,6 +207,21 @@ export interface ClientToServerEvents {
   'admin:kick': (payload: AdminActionPayload) => void;
   'admin:mute': (payload: AdminActionPayload) => void;
   'admin:ban': (payload: AdminActionPayload) => void;
+  // Phase 1 game events
+  'game:truth-or-dare:spin': (payload: TruthOrDareSpinPayload) => void;
+  'game:truth-or-dare:choose': (payload: TruthOrDareChoicePayload) => void;
+  'game:truth-or-dare:complete': (payload: TruthOrDareCompletePayload) => void;
+  'game:truth-or-dare:skip': (payload: TruthOrDareSkipPayload) => void;
+  'game:truth-or-dare:custom-prompt': (payload: TruthOrDareCustomPromptPayload) => void;
+  'game:truth-or-dare:set-spice': (payload: TruthOrDareSetSpicePayload) => void;
+  'game:would-you-rather:vote': (payload: WouldYouRatherVotePayload) => void;
+  'game:would-you-rather:custom-prompt': (payload: WouldYouRatherCustomPromptPayload) => void;
+  'game:never-have-i-ever:finger-down': (payload: NeverHaveIEverFingerPayload) => void;
+  'game:never-have-i-ever:custom-prompt': (payload: NeverHaveIEverCustomPromptPayload) => void;
+  'game:whos-most-likely:vote': (payload: WhosMostLikelyVotePayload) => void;
+  'game:whos-most-likely:custom-prompt': (payload: WhosMostLikelyCustomPromptPayload) => void;
+  'game:guess-who-said-it:submit-answer': (payload: GuessWhoSaidItAnswerPayload) => void;
+  'game:guess-who-said-it:submit-guess': (payload: GuessWhoSaidItGuessPayload) => void;
 }
 
 export interface ServerToClientEvents {
@@ -142,4 +236,18 @@ export interface ServerToClientEvents {
   'chat:receive': (payload: ChatMessage) => void;
   'voice:signal': (payload: VoiceSignalPayload) => void;
   'reconnect:sync': (payload: RoomSyncPayload) => void;
+  // Phase 1 game events
+  'game:truth-or-dare:state': (state: Record<string, unknown>) => void;
+  'game:truth-or-dare:spin-result': (payload: { playerId: string }) => void;
+  'game:truth-or-dare:prompt': (payload: { prompt: Record<string, unknown>; playerId: string }) => void;
+  'game:would-you-rather:state': (state: Record<string, unknown>) => void;
+  'game:would-you-rather:reveal': (payload: { votes: Record<string, string>; voteCounts: { A: number; B: number } }) => void;
+  'game:never-have-i-ever:state': (state: Record<string, unknown>) => void;
+  'game:never-have-i-ever:finger-update': (payload: { playerId: string; fingers: number }) => void;
+  'game:never-have-i-ever:eliminated': (payload: { playerId: string }) => void;
+  'game:whos-most-likely:state': (state: Record<string, unknown>) => void;
+  'game:whos-most-likely:reveal': (payload: { voteCounts: Record<string, number>; prompt: Record<string, unknown> }) => void;
+  'game:guess-who-said-it:state': (state: Record<string, unknown>) => void;
+  'game:guess-who-said-it:phase': (payload: { phase: GWSIPhase }) => void;
+  'game:guess-who-said-it:reveal': (payload: { answers: Record<string, unknown>[] }) => void;
 }

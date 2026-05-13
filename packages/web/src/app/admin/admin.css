@@ -1,41 +1,41 @@
 .adminScene {
-  --ink: #101010;
-  --panel: #ffffff;
-  --gold: #f7e85f;
-  --cyan: #74e1ff;
-  --pink: #ff6fcb;
-  --green: #8bff73;
-  --orange: #ffbf58;
-  --danger: #ff6666;
-  --shadow: 8px 8px 0 var(--ink);
-  --shadow-heavy: 12px 12px 0 var(--ink);
+  --ink: #121212;
+  --panel: #fffdf7;
+  --gold: #ffe05c;
+  --cyan: #7be8ff;
+  --pink: #ff76c8;
+  --green: #86f36d;
+  --orange: #ffbf59;
+  --danger: #ff7171;
+  --shadow: 10px 10px 0 var(--ink);
+  --shadow-heavy: 14px 14px 0 var(--ink);
 
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 14% 10%, rgba(116, 225, 255, 0.28), transparent 22%),
-    radial-gradient(circle at 88% 12%, rgba(255, 111, 203, 0.24), transparent 18%),
-    radial-gradient(circle at 72% 90%, rgba(139, 255, 115, 0.18), transparent 24%),
-    linear-gradient(180deg, #fff5a5 0%, var(--gold) 100%);
-  padding: 20px;
+    radial-gradient(circle at 14% 10%, rgba(123, 232, 255, 0.26), transparent 22%),
+    radial-gradient(circle at 88% 12%, rgba(255, 118, 200, 0.22), transparent 18%),
+    radial-gradient(circle at 72% 90%, rgba(134, 243, 109, 0.18), transparent 24%),
+    linear-gradient(180deg, #fff8b7 0%, var(--gold) 100%);
+  padding: 18px;
   color: var(--ink);
 }
 
 body[data-admin-visual="cyan"] .adminScene {
   background:
-    radial-gradient(circle at 14% 10%, rgba(116, 225, 255, 0.34), transparent 22%),
-    radial-gradient(circle at 88% 12%, rgba(255, 111, 203, 0.16), transparent 18%),
-    radial-gradient(circle at 72% 90%, rgba(139, 255, 115, 0.18), transparent 24%),
-    linear-gradient(180deg, #ddf7ff 0%, #95e9ff 100%);
+    radial-gradient(circle at 14% 10%, rgba(123, 232, 255, 0.32), transparent 22%),
+    radial-gradient(circle at 88% 12%, rgba(255, 118, 200, 0.14), transparent 18%),
+    radial-gradient(circle at 72% 90%, rgba(134, 243, 109, 0.16), transparent 24%),
+    linear-gradient(180deg, #effcff 0%, #a7ecff 100%);
 }
 
 body[data-admin-visual="pink"] .adminScene {
   background:
-    radial-gradient(circle at 14% 10%, rgba(116, 225, 255, 0.18), transparent 22%),
-    radial-gradient(circle at 88% 12%, rgba(255, 111, 203, 0.3), transparent 18%),
-    radial-gradient(circle at 72% 90%, rgba(139, 255, 115, 0.14), transparent 24%),
-    linear-gradient(180deg, #ffd6ef 0%, #ff9fda 100%);
+    radial-gradient(circle at 14% 10%, rgba(123, 232, 255, 0.14), transparent 22%),
+    radial-gradient(circle at 88% 12%, rgba(255, 118, 200, 0.28), transparent 18%),
+    radial-gradient(circle at 72% 90%, rgba(134, 243, 109, 0.12), transparent 24%),
+    linear-gradient(180deg, #ffe3f3 0%, #ffaede 100%);
 }
 
 body[data-admin-contrast="high"] .adminScene,
@@ -46,10 +46,10 @@ body[data-admin-contrast="high"] .adminScene * {
 
 .bgGlow {
   position: fixed;
-  width: 360px;
-  height: 360px;
+  width: 380px;
+  height: 380px;
   border-radius: 50%;
-  filter: blur(85px);
+  filter: blur(90px);
   opacity: 0.56;
   pointer-events: none;
 }
@@ -62,14 +62,14 @@ body[data-admin-contrast="high"] .adminScene * {
 .sideRail,
 .panelCard {
   border: 4px solid var(--ink);
-  border-radius: 28px;
+  border-radius: 30px;
   background: var(--panel);
   box-shadow: var(--shadow-heavy);
 }
 
 .loginPanel {
   max-width: 520px;
-  margin: 56px auto;
+  margin: 44px auto;
   padding: 24px;
   position: relative;
   z-index: 1;
@@ -144,17 +144,17 @@ body[data-admin-contrast="high"] .adminScene * {
 .consoleShell {
   position: relative;
   z-index: 1;
-  max-width: 1500px;
+  max-width: 1520px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: 18px;
 }
 
 .sideRail {
   position: sticky;
-  top: 20px;
-  height: calc(100vh - 40px);
+  top: 18px;
+  height: calc(100vh - 36px);
   padding: 18px;
   display: grid;
   gap: 14px;
@@ -181,7 +181,7 @@ body[data-admin-contrast="high"] .adminScene * {
 
 .metricBox {
   border: 4px solid var(--ink);
-  border-radius: 18px;
+  border-radius: 20px;
   background: #fff7d2;
   box-shadow: var(--shadow);
   padding: 12px;
@@ -213,7 +213,7 @@ body[data-admin-contrast="high"] .adminScene * {
 }
 
 .panelCard {
-  padding: 18px;
+  padding: 20px;
 }
 
 .panelCard h3 {
