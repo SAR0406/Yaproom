@@ -1,7 +1,20 @@
 import type { Metadata } from 'next';
+import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import type { CSSProperties, ReactNode } from 'react';
 import './globals.css';
 import { Providers } from '@/components/Providers';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display'
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono'
+});
 
 export const metadata: Metadata = {
   title: 'Yaproom — Loud room games, rebuilt',
@@ -19,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="h-full antialiased"
+      className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
       style={
         {
           '--font-bebas-neue': '"Arial Black", "Impact", "Trebuchet MS", system-ui, sans-serif',
@@ -28,7 +41,7 @@ export default function RootLayout({
         } as CSSProperties
       }
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-display">
         <Providers>
           <div className="neub-root">{children}</div>
         </Providers>
