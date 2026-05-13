@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
+
 function generateId(): string {
-  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  return randomUUID();
 }
 import type {
   ChaosEvent,
@@ -75,6 +77,17 @@ export function advancePhase(room: RoomState): RoomState {
   if (!room.game) return room;
   const { phases, round } = room.game;
   const currentIndex = phases.indexOf(round.phase);
+
+  // Guard against invalid/desynced phases by snapping back to the first configured phase.
+  if (currentIndex < 0) {
+    room.game.round = {
+      ...round,
+      phase: phases[0] ?? 'instructions',
+      endsAt: null
+    };
+    return room;
+  }
+
   const nextIndex = currentIndex + 1;
 
   if (nextIndex >= phases.length) {
@@ -97,7 +110,7 @@ export function advancePhase(room: RoomState): RoomState {
   };
 
   if (nextPhase === 'reveal' || nextPhase === 'recap') {
-    scoreRound(room, round);
+    scoreRoundIfNeeded(room, round);
     syncScoreboard(room);
   }
 
@@ -160,7 +173,7 @@ function createRound(
   }
 
   if (mode === 'split') {
-    const pair = pickSplitPair(room);
+    const pair = safeSplitPair(room);
     round.payload = {
       pair,
       choices: []
@@ -178,13 +191,25 @@ function selectPrompt(mode: GameMode): string {
   return 'Choose split or steal. Trust is optional.';
 }
 
-function pickSplitPair(room: RoomState): [string, string] {
+function safeSplitPair(room: RoomState): [string, string] {
+  // Avoid hard-throwing during runtime transitions; keep the round valid even if players dropped.
   if (room.players.length < 2) {
-    throw new Error('Split mode requires at least two players.');
+    return [room.hostId, room.hostId];
   }
   const first = room.players[0]?.id ?? room.hostId;
   const second = room.players[1]?.id ?? room.hostId;
   return [first, second];
+}
+
+function scoreRoundIfNeeded(room: RoomState, round: RoundState): void {
+  const alreadyScored = Boolean(round.payload?.__scored);
+  if (alreadyScored) return;
+
+  scoreRound(room, round);
+  round.payload = {
+    ...(round.payload ?? {}),
+    __scored: true
+  };
 }
 
 function scoreRound(room: RoomState, round: RoundState): void {
@@ -321,7 +346,7 @@ const CHAOS_PROBABILITY: Record<ChaosLevel, number> = {
 };
 
 function chaosProbability(level?: ChaosLevel): number {
-  return CHAOS_PROBABILITY[level ?? 'low'];
+  return CHAOS_PROBABILITY[level ?? 'medium'];
 }
 
 function pickRandom<T>(items: readonly T[]): T {

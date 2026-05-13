@@ -187,6 +187,11 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('game:start', async ({ mode }: { mode: GameMode }) => {
+      if (!allowByRateLimit(socket, 'game:start', 2, 5000)) {
+        emitRoomError(socket, 'RATE_LIMIT', 'Please wait before starting again.');
+        return;
+      }
+
       const room = await getRoomFromSocket(socket);
       if (!room || room.hostId !== socket.data.playerId) return;
       if (!supportedModes.has(mode)) return;
@@ -207,6 +212,11 @@ export function registerSocketHandlers(io: Server<ClientToServerEvents, ServerTo
     });
 
     socket.on('round:next', async () => {
+      if (!allowByRateLimit(socket, 'round:next', 3, 5000)) {
+        emitRoomError(socket, 'RATE_LIMIT', 'Round transitions are temporarily limited.');
+        return;
+      }
+
       const room = await getRoomFromSocket(socket);
       if (!room || room.hostId !== socket.data.playerId) return;
       const updated = advancePhase(room);
