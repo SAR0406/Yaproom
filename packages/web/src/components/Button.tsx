@@ -22,42 +22,18 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "typ
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: [
-    "bg-neon-cyan/12 border-neon-cyan/30 text-neon-cyan",
-    "hover:bg-neon-cyan/20 hover:border-neon-cyan/50",
-    "hover:shadow-[0_0_20px_rgba(0,245,255,0.35),0_0_50px_rgba(0,245,255,0.15)]",
-    "active:shadow-[0_0_30px_rgba(0,245,255,0.5),0_0_70px_rgba(0,245,255,0.25)]",
-  ].join(" "),
-  secondary: [
-    "bg-neon-magenta/12 border-neon-magenta/30 text-neon-magenta",
-    "hover:bg-neon-magenta/20 hover:border-neon-magenta/50",
-    "hover:shadow-[0_0_20px_rgba(255,0,110,0.35),0_0_50px_rgba(255,0,110,0.15)]",
-    "active:shadow-[0_0_30px_rgba(255,0,110,0.5),0_0_70px_rgba(255,0,110,0.25)]",
-  ].join(" "),
-  success: [
-    "bg-neon-lime/12 border-neon-lime/30 text-neon-lime",
-    "hover:bg-neon-lime/20 hover:border-neon-lime/50",
-    "hover:shadow-[0_0_20px_rgba(57,255,20,0.35),0_0_50px_rgba(57,255,20,0.15)]",
-    "active:shadow-[0_0_30px_rgba(57,255,20,0.5),0_0_70px_rgba(57,255,20,0.25)]",
-  ].join(" "),
-  danger: [
-    "bg-neon-red/12 border-neon-red/30 text-neon-red",
-    "hover:bg-neon-red/20 hover:border-neon-red/50",
-    "hover:shadow-[0_0_20px_rgba(255,23,68,0.35),0_0_50px_rgba(255,23,68,0.15)]",
-    "active:shadow-[0_0_30px_rgba(255,23,68,0.5),0_0_70px_rgba(255,23,68,0.25)]",
-  ].join(" "),
-  ghost: [
-    "bg-transparent border-white/10 text-text-secondary",
-    "hover:bg-white/5 hover:border-neon-cyan/25 hover:text-text-primary",
-    "hover:shadow-[0_0_15px_rgba(0,245,255,0.15)]",
-  ].join(" "),
+  primary: "btn-primary",
+  secondary: "btn-secondary",
+  success: "btn-success",
+  danger: "btn-danger",
+  ghost: "btn-ghost",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 text-xs gap-1.5 rounded-lg",
-  md: "px-6 py-3 text-sm gap-2 rounded-xl",
-  lg: "px-8 py-4 text-base gap-2.5 rounded-2xl",
-  xl: "px-10 py-5 text-lg gap-3 rounded-2xl",
+  sm: "btn-sm",
+  md: "",
+  lg: "btn-lg",
+  xl: "btn-xl",
 };
 
 /**
@@ -108,8 +84,7 @@ export function Button({
         "font-display font-bold uppercase tracking-[0.06em]",
         "select-none outline-none",
         "transition-all duration-200",
-        "focus-visible:ring-2 focus-visible:ring-neon-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-space-black",
-        // Variant & size
+        // Variant & size mapped to global CSS helpers
         variantStyles[variant],
         sizeStyles[size],
         // Disabled

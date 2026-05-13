@@ -47,36 +47,20 @@ export function Avatar({ name, color, size = "md", status, src }: AvatarProps) {
     .toUpperCase();
 
   return (
-    <div className="relative inline-flex shrink-0">
+    <div className="player-chip" style={{ display: 'inline-flex', alignItems: 'center' }}>
       <div
-        className={cn(
-          "flex items-center justify-center rounded-full font-display font-bold text-white select-none",
-          "ring-2 ring-white/10 ring-offset-1 ring-offset-space-black",
-          "border-2 border-white/5",
-          sizeStyles[size],
-        )}
-        style={{ backgroundColor: color ?? "#8B5CF6" }}
+        className={cn('avatar', sizeStyles[size])}
+        style={{ backgroundColor: color ?? 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         {src ? (
-          <img
-            src={src}
-            alt={name}
-            className="w-full h-full rounded-full object-cover"
-          />
+          <img src={src} alt={name} className="w-full h-full rounded-full object-cover" />
         ) : (
           initials
         )}
       </div>
 
-      {/* Status dot */}
       {status && (
-        <span
-          className={cn(
-            "absolute bottom-0 right-0 rounded-full ring-space-black",
-            statusDotStyles[status],
-            statusSizes[size],
-          )}
-        />
+        <span className={cn('status-dot', status)} aria-hidden />
       )}
     </div>
   );

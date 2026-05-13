@@ -1199,6 +1199,54 @@
     transform: none;
   }
 
+
+/* ── App Shell / Theme Root ───────────────────────────────────────────────── */
+.neub-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  box-sizing: border-box;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: var(--space-lg);
+  align-items: flex-start;
+}
+
+.app-sidebar {
+  width: 320px;
+  min-width: 220px;
+}
+
+.app-main {
+  flex: 1 1 auto;
+  display: block;
+  padding: 0;
+}
+
+/* Decorative orbs used by admin and layout pages */
+.decor-orb {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.9;
+  z-index: var(--z-base);
+}
+.decor-orb.cyan { background: radial-gradient(circle at center, var(--neon-cyan-glow), transparent 50%); width: 600px; height: 600px; left: -120px; top: -80px; }
+.decor-orb.magenta { background: radial-gradient(circle at center, var(--neon-magenta-glow), transparent 50%); width: 480px; height: 480px; right: -80px; top: -120px; }
+.decor-orb.lime { background: radial-gradient(circle at center, var(--neon-lime-glow), transparent 50%); width: 420px; height: 420px; left: 40%; bottom: -120px; }
+
+/* Small helpers to opt components into the neon theme */
+.glass-layout { background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-radius: var(--radius-lg); padding: var(--space-md); }
+
   .glass-panel {
     border-radius: var(--radius-md);
   }

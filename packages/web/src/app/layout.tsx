@@ -28,7 +28,11 @@ export default function RootLayout({
       }
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+            <Providers>
+              <div className="neub-root">
+                {children}
+              </div>
+            </Providers>
       </body>
     </html>
   );

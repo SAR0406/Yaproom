@@ -9,6 +9,39 @@ import { registerAdminRoutes } from './adminRoutes.js';         // ✅ FIXED
 import { registerAiRoutes } from './aiRoutes.js';
 
 const app = fastify({ logger: true });
+const SELF_PING_INTERVAL_MS = 10 * 60 * 1000;
+
+function startSelfPing() {
+  const pingUrl = new URL('/ping', `http://127.0.0.1:${config.port}`);
+  let isPinging = false;
+
+  const pingSelf = async () => {
+    if (isPinging) {
+      return;
+    }
+
+    isPinging = true;
+    try {
+      app.log.info({ url: pingUrl.toString() }, 'Sending self-ping');
+      const response = await fetch(pingUrl);
+      app.log.info({ statusCode: response.status }, 'Self-ping completed');
+    } catch (error) {
+      app.log.error({ err: error }, 'Self-ping failed');
+    } finally {
+      isPinging = false;
+    }
+  };
+
+  void pingSelf();
+
+  const timer = setInterval(() => {
+    void pingSelf();
+  }, SELF_PING_INTERVAL_MS);
+
+  timer.unref?.();
+
+  return () => clearInterval(timer);
+}
 
 function checkAllowedOrigin(origin: string | undefined, channel: 'http' | 'socket'): boolean {
   const allowed = isAllowedClientOrigin(origin);
@@ -34,6 +67,7 @@ app.addHook('onSend', async (_request, reply) => {
 });
 
 app.get('/health', () => ({ status: 'ok' }));
+app.get('/ping', () => ({ status: 'pong' }));
 app.get('/', () => ({ status: 'ok', service: 'yaproom-server' }));
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(app.server, {
@@ -49,6 +83,7 @@ registerAiRoutes(app);
 const start = async () => {
   try {
     await app.listen({ port: config.port, host: '0.0.0.0' });
+    startSelfPing();
   } catch (error) {
     app.log.error(error);
     process.exit(1);

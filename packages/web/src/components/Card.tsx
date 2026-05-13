@@ -25,28 +25,12 @@ interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   glowIntensity?: number;
 }
 
-const variantBorders: Record<CardVariant, string> = {
-  default: "border-white/10 hover:border-white/20",
-  cyan: "border-neon-cyan/20 hover:border-neon-cyan/40",
-  magenta: "border-neon-magenta/20 hover:border-neon-magenta/40",
-  lime: "border-neon-lime/20 hover:border-neon-lime/40",
-  amber: "border-neon-amber/20 hover:border-neon-amber/40",
-};
-
-const variantGlows: Record<CardVariant, string> = {
+const variantClass: Record<CardVariant, string> = {
   default: "",
-  cyan: "hover:shadow-[0_0_25px_rgba(0,245,255,0.12),0_0_60px_rgba(0,245,255,0.06)]",
-  magenta: "hover:shadow-[0_0_25px_rgba(255,0,110,0.12),0_0_60px_rgba(255,0,110,0.06)]",
-  lime: "hover:shadow-[0_0_25px_rgba(57,255,20,0.12),0_0_60px_rgba(57,255,20,0.06)]",
-  amber: "hover:shadow-[0_0_25px_rgba(255,184,0,0.12),0_0_60px_rgba(255,184,0,0.06)]",
-};
-
-const variantAccents: Record<CardVariant, string> = {
-  default: "from-white/5 to-transparent",
-  cyan: "from-neon-cyan/15 to-transparent",
-  magenta: "from-neon-magenta/15 to-transparent",
-  lime: "from-neon-lime/15 to-transparent",
-  amber: "from-neon-amber/15 to-transparent",
+  cyan: "card-cyan",
+  magenta: "card-magenta",
+  lime: "card-lime",
+  amber: "card-amber",
 };
 
 const paddingStyles: Record<CardPadding, string> = {
@@ -86,15 +70,10 @@ export function Card({
   const content = (
     <>
       {/* Corner accent gradient */}
-      {accent && (
-        <div
-          className={cn(
-            "absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl pointer-events-none",
-            variantAccents[variant],
+          {accent && (
+            // keep a subtle corner accent; global CSS provides hover accents too
+            <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ opacity: glowIntensity }} />
           )}
-          style={{ opacity: glowIntensity }}
-        />
-      )}
 
       {/* Scanline overlay */}
       <div className="scanlines pointer-events-none" />
@@ -120,12 +99,10 @@ export function Card({
     "card-game relative overflow-hidden",
     "border backdrop-blur-xl",
     "transition-all duration-300",
-    variantBorders[variant],
-    variantGlows[variant],
     paddingStyles[padding],
     interactive && "cursor-pointer",
-    highlighted &&
-      "border-neon-cyan/50 shadow-[0_0_30px_rgba(0,245,255,0.2),0_0_80px_rgba(0,245,255,0.08)] ring-1 ring-neon-cyan/30",
+    highlighted && "highlighted",
+    variantClass[variant],
     className,
   );
 

@@ -86,11 +86,7 @@ export function Input({
       )}
 
       {/* Input wrapper */}
-      <motion.div
-        className="relative"
-        variants={shake}
-        animate={hasError ? "shake" : undefined}
-      >
+      <motion.div className="relative" variants={shake} animate={hasError ? "shake" : undefined}>
         {/* Leading icon */}
         {icon && (
           <div
@@ -119,19 +115,16 @@ export function Input({
             hasError ? `${id}-error` : helperText ? `${id}-helper` : undefined
           }
           className={cn(
-            // Base input styles
+            // Base input styles use the global .input-game
             "input-game w-full",
-            "font-mono text-text-primary placeholder:text-text-muted/40",
-            "transition-all duration-200",
-            // Size
-            sizeStyles[inputSize],
+            // Size mapping
+            inputSize === "lg" ? "input-lg" : undefined,
             // Icon offset
             icon ? iconSizeStyles[inputSize] : undefined,
             // Trailing action offset
             trailingAction ? "pr-12" : undefined,
-            // Error state
-            hasError &&
-              "border-neon-red/60 shadow-[0_0_15px_rgba(255,23,68,0.2),inset_0_0_15px_rgba(255,23,68,0.05)] focus-within:border-neon-red focus-within:shadow-[0_0_25px_rgba(255,23,68,0.3)]",
+            // Error state maps to the global .input-game.error
+            hasError && "error",
             // Disabled
             disabled && "opacity-40 cursor-not-allowed",
             className,
@@ -146,26 +139,12 @@ export function Input({
           }}
           {...props}
         />
-
         {/* Trailing action */}
         {trailingAction && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2">
             {trailingAction}
           </div>
         )}
-
-        {/* Focus glow ring */}
-        <div
-          className={cn(
-            "absolute inset-0 rounded-xl pointer-events-none transition-opacity duration-300",
-            "ring-1 ring-inset",
-            hasError
-              ? "ring-neon-red/30"
-              : isFocused
-                ? "ring-neon-cyan/40"
-                : "ring-transparent",
-          )}
-        />
       </motion.div>
 
       {/* Bottom row: helper text + char count */}
