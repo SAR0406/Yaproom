@@ -1,0 +1,909 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-primary: #64ddff;
+  --color-surface: #ffffff;
+  --color-foreground: #111111;
+  --color-muted: #666666;
+  --color-text-primary: #111111;
+  --color-text-secondary: #444444;
+  --color-text-muted: #666666;
+  --color-neon-cyan: #64ddff;
+  --color-neon-magenta: #ff5ec8;
+  --color-neon-lime: #7cff76;
+  --color-neon-amber: #ffb347;
+  --color-neon-red: #ff6b6b;
+}
+
+@layer base {
+  :root {
+    --bg: #f7e85f;
+    --ink: #111111;
+    --panel: #ffffff;
+    --cyan: #64ddff;
+    --pink: #ff5ec8;
+    --green: #7cff76;
+    --orange: #ffb347;
+    --purple: #9d7cff;
+    --blue: #6ea8ff;
+    --gold: #ffd84f;
+    --shadow: 8px 8px 0 var(--ink);
+    --shadow-lg: 12px 12px 0 var(--ink);
+    --radius: 28px;
+    --radius-sm: 18px;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--font-display);
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 10% 10%, rgba(100, 221, 255, 0.28), transparent 24%),
+      radial-gradient(circle at 90% 14%, rgba(255, 94, 200, 0.24), transparent 20%),
+      radial-gradient(circle at 80% 88%, rgba(124, 255, 118, 0.22), transparent 20%),
+      linear-gradient(180deg, #fff6a8 0%, var(--bg) 100%);
+  }
+
+  ::selection {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  a {
+    color: inherit;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .neub-root {
+    min-height: 100vh;
+  }
+
+  .shell,
+  .brutal-shell {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 28px;
+    padding: 28px;
+    min-height: 100vh;
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar,
+  .brutal-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: sticky;
+    top: 28px;
+    height: fit-content;
+    align-self: start;
+  }
+
+  .main,
+  .brutal-main {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    min-width: 0;
+  }
+
+  .brand,
+  .brutal-brand,
+  .status-card,
+  .brutal-status-card,
+  .card,
+  .panel,
+  .brutal-panel,
+  .card-game {
+    background: var(--panel);
+    border: 4px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .brand,
+  .brutal-brand {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .brand h1,
+  .brutal-brand h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+  }
+
+  .brand p,
+  .brutal-brand p {
+    margin: 0;
+    font-size: 0.8rem;
+    opacity: 0.82;
+  }
+
+  .badge,
+  .brutal-badge,
+  .score-badge,
+  .pill,
+  .chip,
+  .brutal-chip,
+  .badge-cyan,
+  .badge-magenta,
+  .badge-lime,
+  .badge-amber,
+  .badge-red,
+  .badge-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 4px solid var(--ink);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+  }
+
+  .badge,
+  .brutal-badge {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+
+  .badge-cyan,
+  .brutal-chip.cyan {
+    background: var(--cyan);
+    color: var(--ink);
+  }
+
+  .badge-magenta {
+    background: var(--pink);
+    color: var(--ink);
+  }
+
+  .badge-lime {
+    background: var(--green);
+    color: var(--ink);
+  }
+
+  .badge-amber {
+    background: var(--orange);
+    color: var(--ink);
+  }
+
+  .badge-red {
+    background: #ff7c7c;
+    color: var(--ink);
+  }
+
+  .badge-ghost {
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+  }
+
+  .status-card,
+  .brutal-status-card {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dot,
+  .brutal-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 9999px;
+    background: var(--green);
+    border: 3px solid var(--ink);
+    animation: status-pulse 2s ease-in-out infinite;
+    flex: 0 0 auto;
+  }
+
+  .small-label,
+  .brutal-small-label,
+  .eyebrow {
+    margin: 0;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .status-value,
+  .brutal-status-value {
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .nav,
+  .brutal-nav {
+    display: grid;
+    gap: 8px;
+  }
+
+  .nav a,
+  .nav-link,
+  .brutal-nav a {
+    padding: 14px 16px;
+    background: var(--panel);
+    color: var(--ink);
+    border: 4px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 0.9rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+
+  .nav a:hover,
+  .nav a.active,
+  .nav-link:hover,
+  .nav-link.active,
+  .brutal-nav a:hover,
+  .brutal-nav a.active {
+    background: var(--ink);
+    color: var(--bg);
+    transform: translate(-1px, -1px);
+    box-shadow: 0 0 0 var(--ink);
+  }
+
+  .sidebar-footer,
+  .brutal-sidebar-footer {
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.4;
+  }
+
+  .clock,
+  .brutal-clock {
+    font-size: 2.4rem;
+    font-weight: 900;
+    font-family: var(--font-mono);
+    letter-spacing: -0.08em;
+  }
+
+  .subtle,
+  .brutal-subtle {
+    opacity: 0.62;
+  }
+
+  .topbar,
+  .brutal-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 28px;
+  }
+
+  .topbar .left,
+  .topbar .right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .topbar .right {
+    justify-content: flex-end;
+  }
+
+  .topbar h2,
+  .brutal-topbar h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+  }
+
+  .chip,
+  .brutal-chip,
+  .pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--bg);
+    color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    font-size: 0.85rem;
+  }
+
+  .brutal-chip.dark {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .stat-item {
+    background: var(--panel);
+    border: 4px solid var(--ink);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+  }
+
+  .card,
+  .panel,
+  .card-game,
+  .panelCard {
+    padding: 24px;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid rgba(17, 17, 17, 0.1);
+  }
+
+  .card-head h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+
+  .fields,
+  .log,
+  .log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label,
+  .loginForm label,
+  .roomPicker label,
+  .inlineControls label {
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .field input,
+  .field textarea,
+  .field select,
+  .loginForm input,
+  .roomPicker select,
+  .inlineControls select,
+  .inlineControls input,
+  .input-game {
+    width: 100%;
+    padding: 12px 14px;
+    border: 4px solid var(--ink);
+    border-radius: 16px;
+    background: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: var(--shadow);
+    outline: none;
+  }
+
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus,
+  .loginForm input:focus,
+  .roomPicker select:focus,
+  .inlineControls select:focus,
+  .inlineControls input:focus,
+  .input-game:focus {
+    transform: translate(-2px, -2px);
+  }
+
+  .input-game.error {
+    background: #ffe3e3;
+    border-color: var(--orange);
+  }
+
+  .hintLine {
+    margin-top: 12px;
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .errorBox {
+    border: 4px solid var(--ink);
+    border-radius: 14px;
+    background: #ffd8d8;
+    padding: 10px 12px;
+    font-weight: 800;
+  }
+
+  .actions,
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .buttonGrid,
+  .inlineControls,
+  .two,
+  .brutal-grid-two {
+    display: grid;
+    gap: 16px;
+  }
+
+  .buttonGrid {
+    margin-top: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .inlineControls {
+    margin-top: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inlineControls .wide {
+    grid-column: 1 / -1;
+  }
+
+  .btn,
+  .btn-game,
+  .brutalBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 4px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .btn:hover,
+  .btn-game:hover,
+  .brutalBtn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .btn:active,
+  .btn-game:active,
+  .brutalBtn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .btn-primary,
+  .btn-game.btn-primary,
+  .brutalBtn.primary {
+    background: var(--cyan);
+    color: var(--ink);
+  }
+
+  .btn-secondary,
+  .btn-game.btn-secondary,
+  .brutalBtn.accent {
+    background: var(--pink);
+    color: var(--ink);
+  }
+
+  .btn-success,
+  .btn-game.btn-success,
+  .brutalBtn.success {
+    background: var(--green);
+    color: var(--ink);
+  }
+
+  .btn-danger,
+  .btn-game.btn-danger,
+  .brutalBtn.danger {
+    background: var(--orange);
+    color: var(--ink);
+  }
+
+  .btn-warning {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  .btn-purple {
+    background: var(--purple);
+    color: var(--ink);
+  }
+
+  .btn-blue {
+    background: var(--blue);
+    color: var(--ink);
+  }
+
+  .btn-dark {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .btn-neutral {
+    background: #e0e0e0;
+    color: var(--ink);
+  }
+
+  .btn-ghost,
+  .brutalBtn.light {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: none;
+  }
+
+  .btn-ghost:hover,
+  .brutalBtn.light:hover {
+    box-shadow: none;
+  }
+
+  .btn-sm {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .btn-lg {
+    padding: 16px 28px;
+    font-size: 1rem;
+  }
+
+  .btn-xl {
+    padding: 20px 36px;
+    font-size: 1.1rem;
+  }
+
+  .toggle,
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .toggle input,
+  .switch input {
+    width: 48px;
+    height: 28px;
+    appearance: none;
+    background: #ddd;
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .toggle input:checked,
+  .switch input:checked {
+    background: var(--green);
+  }
+
+  .toggle input::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    top: 1px;
+    left: 2px;
+    border: 2px solid var(--ink);
+    transition: left 0.2s ease;
+  }
+
+  .toggle input:checked::before {
+    left: 22px;
+  }
+
+  .log-item {
+    padding: 12px;
+    background: #f9f9f9;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .log-item strong {
+    color: var(--ink);
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .card-game {
+    overflow: hidden;
+  }
+
+  .card-cyan {
+    border-color: var(--cyan);
+    box-shadow: 8px 8px 0 var(--cyan);
+  }
+
+  .card-magenta {
+    border-color: var(--pink);
+    box-shadow: 8px 8px 0 var(--pink);
+  }
+
+  .card-lime {
+    border-color: var(--green);
+    box-shadow: 8px 8px 0 var(--green);
+  }
+
+  .card-amber {
+    border-color: var(--orange);
+    box-shadow: 8px 8px 0 var(--orange);
+  }
+
+  .brutal-panel,
+  .card-game,
+  .panelCard,
+  .brutal-status-card,
+  .brutal-brand {
+    position: relative;
+  }
+
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(17, 17, 17, 0.03) 0, rgba(17, 17, 17, 0.03) 1px, transparent 1px, transparent 6px);
+    background-size: 100% 6px;
+    opacity: 0.28;
+    border-radius: inherit;
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.45);
+    transform: scale(0);
+    animation: ripple-pop 600ms ease-out;
+    pointer-events: none;
+  }
+
+  .player-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 100%;
+    height: 100%;
+    border: 4px solid var(--ink);
+    border-radius: 9999px;
+    box-shadow: var(--shadow);
+    font-weight: 900;
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .status-dot {
+    display: inline-block;
+    border: 2px solid var(--ink);
+    border-radius: 9999px;
+  }
+
+  .status-dot.online {
+    background: var(--green);
+  }
+
+  .status-dot.away {
+    background: var(--orange);
+  }
+
+  .status-dot.offline {
+    background: #b9b9b9;
+  }
+
+  .score-badge {
+    min-width: 64px;
+    padding: 10px 14px;
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    border-radius: 16px;
+  }
+
+  .text-muted {
+    color: var(--color-muted);
+  }
+
+  .text-shimmer {
+    background: linear-gradient(90deg, var(--ink) 0%, var(--cyan) 45%, var(--pink) 70%, var(--ink) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-glow-cyan {
+    text-shadow: 0 0 16px rgba(100, 221, 255, 0.45);
+  }
+
+  .text-glow-magenta {
+    text-shadow: 0 0 16px rgba(255, 94, 200, 0.45);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .animate-spin-slow {
+    animation: spin 1.6s linear infinite;
+  }
+
+  .animate-status-pulse {
+    animation: status-pulse 1.8s ease-in-out infinite;
+  }
+
+  .wrap-wide {
+    max-width: 100%;
+  }
+}
+
+@layer utilities {
+  .text-muted {
+    color: var(--color-muted);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+@keyframes ripple-pop {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1160px) {
+  .shell,
+  .brutal-shell {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .sidebar,
+  .brutal-sidebar {
+    position: relative;
+    top: auto;
+  }
+
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .shell,
+  .brutal-shell {
+    padding: 14px;
+  }
+
+  .topbar,
+  .brutal-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar .right {
+    justify-content: flex-start;
+  }
+
+  .two,
+  .brutal-grid-two,
+  .stats,
+  .buttonGrid,
+  .inlineControls {
+    grid-template-columns: 1fr;
+  }
+
+  .clock,
+  .brutal-clock {
+    font-size: 1.7rem;
+  }
+
+  .card-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
