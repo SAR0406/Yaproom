@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import type { RoomState, Player, GamePhase, GameType } from '@yapzi/shared';
+import type { RoomState, PlayerState, GamePhase, GameMode } from '@yapzi/shared';
 import { initializeSocket, getSocket, joinRoom as socketJoinRoom } from '@/lib/socket';
 
 interface GameStore {
@@ -16,8 +16,8 @@ interface GameStore {
 
   // Game state
   roomState: RoomState | null;
-  players: Player[];
-  currentPlayer: Player | null;
+  players: PlayerState[];
+  currentPlayer: PlayerState | null;
   phase: GamePhase;
 
   // UI state
@@ -112,14 +112,6 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({
         error: data.message,
       });
-    });
-
-
-
-    socket.on('player_left', (data) => {
-      set((prev) => ({
-        players: prev.players.filter((p) => p.id !== data.playerId),
-      }));
     });
   };
 
