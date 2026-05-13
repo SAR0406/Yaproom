@@ -1,356 +1,468 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import './admin.css';
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { resolveBackendOrigin } from "@/lib/backendUrl";
+import "./admin.css";
 
-type LogItem = { title: string; detail: string; time: string };
+type RoomSummary = {
+  code: string;
+  status: "open" | "locked" | "ended";
+  players: number;
+  hostId: string;
+};
+
+type RoomDetail = {
+  code: string;
+  status: "open" | "locked" | "ended";
+  hostId: string;
+  settings: {
+    chaosLevel?: "low" | "medium" | "high";
+    roundLengthSec?: number;
+    allowLateJoin?: boolean;
+    allowSpectators?: boolean;
+    anonymousMode?: boolean;
+    voiceEnabled?: boolean;
+  };
+  players: Array<{
+    id: string;
+    nickname: string;
+    isHost: boolean;
+    isMuted: boolean;
+    score: number;
+    isConnected: boolean;
+  }>;
+};
+
+type Overview = {
+  rooms: number;
+  connectedSockets: number;
+};
+
+type LoginResponse = {
+  ok: true;
+  token: string;
+  expiresAt: number;
+  username: string;
+};
+
+const STORAGE_KEY = "yapzi_admin_token";
 
 export default function AdminPage() {
-  const [clock, setClock] = useState('--:--:--');
-  const [history, setHistory] = useState<LogItem[]>([]);
-  const [visible, setVisible] = useState(true);
-  const [previewOn, setPreviewOn] = useState(true);
-  const [mode, setMode] = useState('Standard');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [rooms, setRooms] = useState<RoomSummary[]>([]);
+  const [selectedRoomCode, setSelectedRoomCode] = useState<string>("");
+  const [selectedRoom, setSelectedRoom] = useState<RoomDetail | null>(null);
+  const [noticeMessage, setNoticeMessage] = useState("");
+  const [targetPlayerId, setTargetPlayerId] = useState("");
+  const [activity, setActivity] = useState<string[]>([]);
+
+  const [visualMode, setVisualMode] = useState<"gold" | "cyan" | "pink">("gold");
+  const [contrastMode, setContrastMode] = useState<"normal" | "high">("normal");
+
+  const backendOrigin = useMemo(() => resolveBackendOrigin(), []);
 
   useEffect(() => {
-    const tick = () => setClock(new Date().toLocaleTimeString());
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setToken(saved);
+    }
   }, []);
 
   useEffect(() => {
-    // restore draft
-    try {
-      const raw = localStorage.getItem('mqtt_admin_draft');
-      if (raw) {
-        const data = JSON.parse(raw);
-        Object.entries(data).forEach(([key, value]) => {
-          const el = document.getElementById(key) as HTMLInputElement | null;
-          if (el) el.value = String(value ?? '');
-        });
+    document.body.dataset.adminVisual = visualMode;
+    document.body.dataset.adminContrast = contrastMode;
+    return () => {
+      delete document.body.dataset.adminVisual;
+      delete document.body.dataset.adminContrast;
+    };
+  }, [visualMode, contrastMode]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    void (async () => {
+      const session = await apiCall<{ ok: true }>("/admin/session", { method: "GET" }, token);
+      if (!session.ok) {
+        localStorage.removeItem(STORAGE_KEY);
+        setToken(null);
+        setAuthError("Session expired. Please log in again.");
+        return;
       }
-    } catch {}
-    updatePreview('ready');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  function timeString() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
+      await refreshDashboard(token);
+    })();
+  }, [token]);
 
-  function pushLog(title: string, detail: string) {
-    const item = { title, detail, time: timeString() };
-    setHistory((h) => [item, ...h].slice(0, 6));
-  }
+  async function refreshDashboard(authToken: string) {
+    const [overviewResp, roomsResp] = await Promise.all([
+      apiCall<{ ok: true; rooms: number; connectedSockets: number }>("/admin", { method: "GET" }, authToken),
+      apiCall<{ rooms: RoomSummary[] }>("/admin/rooms", { method: "GET" }, authToken)
+    ]);
 
-  function readForm() {
-    const ids = ['broker','publishTopic','settingsTopic','username','message','count','speed','panelTitle'];
-    const out: Record<string, any> = {};
-    ids.forEach((id) => {
-      const el = document.getElementById(id) as HTMLInputElement | null;
-      out[id] = el ? el.value : '';
+    if (!overviewResp.ok || !roomsResp.ok) {
+      addActivity("Failed to refresh dashboard data.");
+      return;
+    }
+
+    setOverview({
+      rooms: overviewResp.data.rooms,
+      connectedSockets: overviewResp.data.connectedSockets
     });
-    return out;
+    setRooms(roomsResp.data.rooms);
+
+    const nextSelected = selectedRoomCode || roomsResp.data.rooms[0]?.code || "";
+    if (nextSelected) {
+      setSelectedRoomCode(nextSelected);
+      await loadRoom(authToken, nextSelected);
+    } else {
+      setSelectedRoom(null);
+      setTargetPlayerId("");
+    }
   }
 
-  function updateStats() {
-    const data = readForm();
-    const sb = document.getElementById('statBroker');
-    const sp = document.getElementById('statPublish');
-    const ss = document.getElementById('statSettings');
-    const sm = document.getElementById('statMode');
-    const bt = document.getElementById('brandTitle');
-    if (sb) sb.textContent = data.broker ? 'Configured' : 'Offline';
-    if (sp) sp.textContent = data.publishTopic || '-';
-    if (ss) ss.textContent = data.settingsTopic || '-';
-    if (sm) sm.textContent = mode;
-    if (bt) bt.textContent = data.panelTitle || 'ADMIN PANEL';
+  async function loadRoom(authToken: string, code: string) {
+    const roomResp = await apiCall<{ room: RoomDetail }>(`/admin/rooms/${code}`, { method: "GET" }, authToken);
+    if (!roomResp.ok) {
+      addActivity(`Unable to load room ${code}.`);
+      return;
+    }
+    setSelectedRoom(roomResp.data.room);
+    if (roomResp.data.room.players.length > 0) {
+      setTargetPlayerId(roomResp.data.room.players[0]?.id ?? "");
+    } else {
+      setTargetPlayerId("");
+    }
   }
 
-  function updatePreview(action = 'ready') {
-    const data = readForm();
-    const payload = {
-      action,
-      broker: data.broker,
-      publishTopic: data.publishTopic,
-      settingsTopic: data.settingsTopic,
-      username: data.username,
-      message: data.message,
-      count: Number(data.count || 0),
-      speed: Number(data.speed || 0),
-      panelTitle: data.panelTitle,
-      visible,
-      previewOn,
-      date: new Date().toISOString(),
-    };
-    const preview = document.getElementById('previewText');
-    if (preview) preview.textContent = JSON.stringify(payload, null, 2);
-    updateStats();
-    const status = document.getElementById('statusText');
-    if (status) status.textContent = action.toUpperCase();
-  }
+  async function handleLogin(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setAuthError(null);
 
-  function safeText(s: any) {
-    return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-  }
-
-  function standardMode() {
-    setMode('Standard');
-    updatePreview('standard_publish');
-    const data = readForm();
-    pushLog('STANDARD', `Prepared publish payload for ${data.publishTopic}`);
-  }
-
-  function chaosMode() {
-    setMode('Chaos Matrix');
-    const names = [
-      'Tony Stark 💗','Math Warrior','Physics King','Code Ninja','Aryan Sharma','Rohit Gamer','Ananya Singh','Dev Master','JEE AIR 1','Sigma Boy'
-    ];
-    const el = document.getElementById('username') as HTMLInputElement | null;
-    if (el) el.value = names[Math.floor(Math.random()*names.length)];
-    updatePreview('chaos_matrix');
-    const data = readForm();
-    pushLog('CHAOS MATRIX', `Randomized identity: ${data.username}`);
-  }
-
-  function allClear() { setMode('All Clear'); (document.getElementById('message') as HTMLInputElement | null)!.value = ''; updatePreview('all_clear'); pushLog('ALL CLEAR','Message field cleared'); }
-  function stopAction() { setMode('Stopped'); updatePreview('stop'); pushLog('STOP','Operations paused'); }
-  function lockChat(){ setMode('Chat Locked'); updatePreview('chat_lock'); pushLog('LOCK CHAT', `Settings payload prepared for ${(document.getElementById('settingsTopic') as HTMLInputElement | null)?.value}`); }
-  function unlockChat(){ setMode('Chat Unlocked'); updatePreview('chat_unlock'); pushLog('UNLOCK', `Settings payload prepared for ${(document.getElementById('settingsTopic') as HTMLInputElement | null)?.value}`); }
-  function hideChat(){ setMode('Hidden'); updatePreview('chat_hide'); pushLog('CHAT HIDE','Chat hidden mode enabled'); }
-  function publicChat(){ setMode('Public'); updatePreview('chat_public'); pushLog('CHAT PUBLIC','Public mode enabled'); }
-  function connectBroker(){ setMode('Connected'); updatePreview('connected'); const b = (document.getElementById('broker') as HTMLInputElement | null)?.value || ''; (document.getElementById('statBroker') as HTMLElement | null)!.textContent = b ? 'Connected' : 'Offline'; pushLog('CONNECT', b || 'Broker URL missing'); }
-
-  function resetPanel(){
-    const defaults: Record<string,string> = {
-      broker:'wss://mqtt-ws.example.com:8084/mqtt',publishTopic:'room_publish',settingsTopic:'room_settings',username:'Tony Stark 💗',message:'Hello everyone 🔥',count:'100',speed:'300',panelTitle:'MQTT Chaos Panel'
-    };
-    Object.entries(defaults).forEach(([id, val]) => {
-      const el = document.getElementById(id) as HTMLInputElement | null; if (el) el.value = val;
+    const response = await apiCall<LoginResponse>("/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
     });
-    setVisible(true); setPreviewOn(true); setMode('Standard');
-    const tv = document.getElementById('toggleVisible'); if (tv) tv.classList.add('on');
-    const tp = document.getElementById('togglePreview'); if (tp) tp.classList.add('on');
-    const sp = document.getElementById('section-preview'); if (sp) sp.classList.remove('hidden');
-    const sc = document.getElementById('section-controls'); if (sc) sc.classList.remove('hidden');
-    setHistory([]); updatePreview('reset'); pushLog('RESET','Panel restored to defaults'); const status = document.getElementById('statusText'); if (status) status.textContent = 'READY';
+
+    setBusy(false);
+
+    if (!response.ok) {
+      setAuthError(response.error || "Invalid credentials.");
+      return;
+    }
+
+    localStorage.setItem(STORAGE_KEY, response.data.token);
+    setToken(response.data.token);
+    setPassword("");
+    addActivity(`Logged in as ${response.data.username}.`);
   }
 
-  function copyPreview(){ const text = (document.getElementById('previewText') as HTMLElement | null)?.textContent || ''; navigator.clipboard.writeText(text).then(()=>{ pushLog('COPY','Preview copied to clipboard'); const status = document.getElementById('statusText'); if (status) status.textContent = 'COPIED'; }); }
-  function saveDraft(){ localStorage.setItem('mqtt_admin_draft', JSON.stringify(readForm())); pushLog('SAVE','Draft saved locally'); const status = document.getElementById('statusText'); if (status) status.textContent = 'SAVED'; }
+  function logout() {
+    localStorage.removeItem(STORAGE_KEY);
+    setToken(null);
+    setOverview(null);
+    setRooms([]);
+    setSelectedRoom(null);
+    setSelectedRoomCode("");
+    addActivity("Logged out from admin session.");
+  }
+
+  async function changeRoomStatus(status: "open" | "locked" | "ended") {
+    if (!token || !selectedRoomCode) return;
+    const resp = await apiCall<{ ok: true }>(
+      `/admin/rooms/${selectedRoomCode}/status`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      },
+      token
+    );
+    if (!resp.ok) {
+      addActivity(`Status update failed for ${selectedRoomCode}.`);
+      return;
+    }
+    addActivity(`Room ${selectedRoomCode} set to ${status}.`);
+    await refreshDashboard(token);
+  }
+
+  async function pushAnnouncement() {
+    if (!token || !selectedRoomCode || !noticeMessage.trim()) return;
+    const resp = await apiCall<{ ok: true }>(
+      `/admin/rooms/${selectedRoomCode}/announce`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: noticeMessage.trim() })
+      },
+      token
+    );
+    if (!resp.ok) {
+      addActivity(`Notice failed: ${resp.error || "Unknown error"}.`);
+      return;
+    }
+    addActivity(`Notice sent to ${selectedRoomCode}.`);
+    setNoticeMessage("");
+  }
+
+  async function playerAction(kind: "mute" | "kick" | "ban") {
+    if (!token || !selectedRoomCode || !targetPlayerId) return;
+    const resp = await apiCall<{ ok: true }>(
+      `/admin/rooms/${selectedRoomCode}/${kind}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetId: targetPlayerId })
+      },
+      token
+    );
+    if (!resp.ok) {
+      addActivity(`${kind.toUpperCase()} failed for ${targetPlayerId}.`);
+      return;
+    }
+    addActivity(`${kind.toUpperCase()} applied to ${targetPlayerId}.`);
+    await loadRoom(token, selectedRoomCode);
+    await refreshDashboard(token);
+  }
+
+  async function patchSettings(patch: Partial<RoomDetail["settings"]>) {
+    if (!token || !selectedRoomCode) return;
+    const resp = await apiCall<{ ok: true }>(
+      `/admin/rooms/${selectedRoomCode}/settings`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch)
+      },
+      token
+    );
+    if (!resp.ok) {
+      addActivity("Settings update failed.");
+      return;
+    }
+    addActivity("Room settings updated.");
+    await loadRoom(token, selectedRoomCode);
+  }
+
+  function addActivity(message: string) {
+    const timestamp = new Date().toLocaleTimeString();
+    setActivity((prev) => [`[${timestamp}] ${message}`, ...prev].slice(0, 10));
+  }
+
+  if (!token) {
+    return (
+      <div className="adminScene">
+        <div className="bgGlow glowA" />
+        <div className="bgGlow glowB" />
+        <div className="bgGlow glowC" />
+
+        <section className="loginPanel">
+          <h1>Yaproom Control Access</h1>
+          <p>Sign in with backend admin credentials to manage live rooms.</p>
+
+          <form className="loginForm" onSubmit={handleLogin}>
+            <label>
+              Username
+              <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Frontman" />
+            </label>
+
+            <label>
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your admin password"
+              />
+            </label>
+
+            <button type="submit" className="brutalBtn primary" disabled={busy}>
+              {busy ? "Signing in..." : "Login to Admin"}
+            </button>
+          </form>
+
+          {authError && <div className="errorBox">{authError}</div>}
+          <div className="hintLine">Backend: {backendOrigin}</div>
+        </section>
+      </div>
+    );
+  }
 
   return (
-    <div className="root">
-      <div className="noise"></div>
-      <div className={`orb a`}></div>
-      <div className={`orb b`}></div>
-      <div className={`orb c`}></div>
+    <div className="adminScene">
+      <div className="bgGlow glowA" />
+      <div className="bgGlow glowB" />
+      <div className="bgGlow glowC" />
 
-      <div className="shell">
-        <aside className={`sidebar panel`}>
-          <div className="brand">
-            <div className="badge">MQTT</div>
-            <div>
-              <h1 id="brandTitle">ADMIN PANEL</h1>
-              <p>Neubrutal control center</p>
+      <div className="consoleShell">
+        <aside className="sideRail">
+          <h2>Yaproom HQ</h2>
+          <p>Power controls and design controls in one place.</p>
+
+          <div className="metricStack">
+            <div className="metricBox">
+              <span>Active Rooms</span>
+              <strong>{overview?.rooms ?? 0}</strong>
+            </div>
+            <div className="metricBox">
+              <span>Connected Sockets</span>
+              <strong>{overview?.connectedSockets ?? 0}</strong>
             </div>
           </div>
 
-          <div className={`status-card`}>
-            <div className={`dot`}></div>
-            <div>
-              <p className={`small-label`}>SYSTEM STATUS</p>
-              <div className={`status-value`} id="statusText">READY</div>
-            </div>
+          <div className="roomPicker">
+            <label>Room</label>
+            <select
+              value={selectedRoomCode}
+              onChange={(e) => {
+                const code = e.target.value;
+                setSelectedRoomCode(code);
+                if (token && code) {
+                  void loadRoom(token, code);
+                }
+              }}
+            >
+              {rooms.map((room) => (
+                <option key={room.code} value={room.code}>
+                  {room.code} - {room.players} players - {room.status}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className={`nav`}>
-            <button className={`active`} data-section="section-publish">Publish</button>
-            <button data-section="section-settings">Settings</button>
-            <button data-section="section-controls">Controls</button>
-            <button data-section="section-preview">Preview</button>
-          </div>
-
-          <div className={`sidebar-footer`}>
-            <span className={`tiny-label small-label`}>LIVE CLOCK</span>
-            <div className={`clock`} id="clock">{clock}</div>
-            <div className={`subtle`}>Local demo dashboard interface</div>
-          </div>
+          <button className="brutalBtn dark" onClick={() => token && refreshDashboard(token)}>
+            Refresh
+          </button>
+          <button className="brutalBtn danger" onClick={logout}>
+            Logout
+          </button>
         </aside>
 
-        <main className={`main`}>
-          <section className={`topbar panel`}>
-            <div>
-              <p className={`eyebrow`}>BROKER CONSOLE</p>
-              <h2>Professional MQTT Admin Interface</h2>
-            </div>
+        <main className="mainDeck">
+          <section className="panelCard">
+            <h3>Yaproom Power</h3>
+            <p>Control room state instantly.</p>
 
-            <div className={`right topbar`}>
-              <button className={`chip chip-green`} id="btnConnect" onClick={connectBroker}>Connect</button>
-              <button className={`chip chip-dark`} id="btnReset" onClick={resetPanel}>Reset</button>
-            </div>
-          </section>
-
-          <section className={`stats`}>
-            <article className={`stat panel`}>
-              <span>Broker</span>
-              <strong id="statBroker">Offline</strong>
-            </article>
-            <article className={`stat panel`}>
-              <span>Publish Topic</span>
-              <strong id="statPublish">room_publish</strong>
-            </article>
-            <article className={`stat panel`}>
-              <span>Settings Topic</span>
-              <strong id="statSettings">room_settings</strong>
-            </article>
-            <article className={`stat panel`}>
-              <span>Mode</span>
-              <strong id="statMode">Standard</strong>
-            </article>
-          </section>
-
-          <section id="section-publish" className={`panel card`}>
-            <div className={`card-head`}>
-              <div>
-                <p className={`eyebrow`}>PUBLISH CONFIG</p>
-                <h3>Chat Payload Builder</h3>
-              </div>
-              <span className={`pill pink`}>_publish</span>
-            </div>
-
-            <div className={`fields`}>
-              <div className={`grid two`}>
-                <div className={`field`}>
-                  <label>MQTT Broker URL</label>
-                  <input id="broker" defaultValue="wss://mqtt-ws.example.com:8084/mqtt" />
-                </div>
-                <div className={`field`}>
-                  <label>Publish Topic</label>
-                  <input id="publishTopic" defaultValue="room_publish" />
-                </div>
-              </div>
-
-              <div className={`grid two`}>
-                <div className={`field`}>
-                  <label>Username</label>
-                  <input id="username" defaultValue="Tony Stark 💗" />
-                </div>
-                <div className={`field`}>
-                  <label>Message</label>
-                  <input id="message" defaultValue="Hello everyone 🔥" />
-                </div>
-              </div>
-
-              <div className={`grid two`}>
-                <div className={`field`}>
-                  <label>Count</label>
-                  <input id="count" type="number" defaultValue={100} />
-                </div>
-                <div className={`field`}>
-                  <label>Speed (ms)</label>
-                  <input id="speed" type="number" defaultValue={300} />
-                </div>
-              </div>
-
-              <div className={`actions`}>
-                <button className={`btn btn-primary`} id="btnStandard" onClick={standardMode}>Standard Publish</button>
-                <button className={`btn btn-accent`} id="btnChaos" onClick={chaosMode}>Chaos Matrix</button>
-                <button className={`btn btn-neutral`} id="btnAllClear" onClick={allClear}>All Clear</button>
-                <button className={`btn btn-danger`} id="btnStop" onClick={stopAction}>Stop</button>
-              </div>
+            <div className="buttonGrid">
+              <button className="brutalBtn success" onClick={() => void changeRoomStatus("open")}>Open Room</button>
+              <button className="brutalBtn warn" onClick={() => void changeRoomStatus("locked")}>Lock Room</button>
+              <button className="brutalBtn danger" onClick={() => void changeRoomStatus("ended")}>End Room</button>
             </div>
           </section>
 
-          <section id="section-settings" className={`panel card`}>
-            <div className={`card-head`}>
-              <div>
-                <p className={`eyebrow`}>SETTINGS CONFIG</p>
-                <h3>Room Control Channel</h3>
-              </div>
-              <span className={`pill cyan`}>_settings</span>
+          <section className="panelCard">
+            <h3>Yaproom Design Controls</h3>
+            <p>Update live room behavior and admin visual mode.</p>
+
+            <div className="inlineControls">
+              <label>
+                Chaos
+                <select
+                  value={selectedRoom?.settings.chaosLevel ?? "medium"}
+                  onChange={(e) => void patchSettings({ chaosLevel: e.target.value as "low" | "medium" | "high" })}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </label>
+
+              <label>
+                Round Seconds
+                <input
+                  type="number"
+                  min={15}
+                  max={600}
+                  defaultValue={selectedRoom?.settings.roundLengthSec ?? 60}
+                  onBlur={(e) => {
+                    const parsed = Number(e.target.value);
+                    if (!Number.isNaN(parsed)) {
+                      void patchSettings({ roundLengthSec: parsed });
+                    }
+                  }}
+                />
+              </label>
             </div>
 
-            <div className={`fields`}>
-              <div className={`grid two`}>
-                <div className={`field`}>
-                  <label>Settings Topic</label>
-                  <input id="settingsTopic" defaultValue="room_settings" />
-                </div>
-                <div className={`field`}>
-                  <label>Panel Title</label>
-                  <input id="panelTitle" defaultValue="MQTT Chaos Panel" />
-                </div>
-              </div>
-
-              <div className={`actions`}>
-                <button className={`btn btn-warning`} id="btnLock" onClick={lockChat}>Lock Chat</button>
-                <button className={`btn btn-success`} id="btnUnlock" onClick={unlockChat}>Unlock</button>
-                <button className={`btn btn-purple`} id="btnHide" onClick={hideChat}>Chat Hide</button>
-                <button className={`btn btn-blue`} id="btnPublic" onClick={publicChat}>Chat Public</button>
-              </div>
-            </div>
-          </section>
-
-          <section id="section-controls" className={`panel card`}>
-            <div className={`card-head`}>
-              <div>
-                <p className={`eyebrow`}>ADMIN CONTROLS</p>
-                <h3>Global Switches</h3>
-              </div>
-              <span className={`pill gold`}>LIVE</span>
+            <div className="buttonGrid">
+              <button className="brutalBtn accent" onClick={() => void patchSettings({ allowLateJoin: !(selectedRoom?.settings.allowLateJoin ?? true) })}>
+                Toggle Late Join
+              </button>
+              <button className="brutalBtn accent" onClick={() => void patchSettings({ allowSpectators: !(selectedRoom?.settings.allowSpectators ?? false) })}>
+                Toggle Spectators
+              </button>
+              <button className="brutalBtn accent" onClick={() => void patchSettings({ anonymousMode: !(selectedRoom?.settings.anonymousMode ?? false) })}>
+                Toggle Anonymous
+              </button>
             </div>
 
-            <div className={`controls`}>
-              <div className={`toggle`}>
-                <span>Panel Visible</span>
-                <button id="toggleVisible" className={`switch ${visible ? 'on' : ''}`} aria-label="Toggle panel visibility" onClick={() => { setVisible(v => !v); const el = document.getElementById('section-preview'); if (el) el.classList.toggle('hidden', !visible); pushLog('VISIBILITY', visible ? 'Panel hidden' : 'Panel shown'); updatePreview('visibility_changed'); }}>
-                  <span className={`knob`}></span>
-                </button>
-              </div>
-
-              <div className={`toggle`}>
-                <span>Auto Preview</span>
-                <button id="togglePreview" className={`switch ${previewOn ? 'on' : ''}`} aria-label="Toggle live preview" onClick={() => { setPreviewOn(p => !p); const el = document.getElementById('section-preview'); if (el) el.classList.toggle('hidden', !previewOn); pushLog('PREVIEW', previewOn ? 'Preview disabled' : 'Preview enabled'); updatePreview('preview_toggled'); }}>
-                  <span className={`knob`}></span>
-                </button>
-              </div>
-            </div>
-
-            <div className={`actions`} style={{ marginTop: 14 }}>
-              <button className={`btn btn-dark`} id="btnCopy" onClick={copyPreview}>Copy Preview</button>
-              <button className={`btn btn-dark`} id="btnSave" onClick={saveDraft}>Save Draft</button>
+            <div className="buttonGrid">
+              <button className="brutalBtn light" onClick={() => setVisualMode("gold")}>Gold Theme</button>
+              <button className="brutalBtn light" onClick={() => setVisualMode("cyan")}>Cyan Theme</button>
+              <button className="brutalBtn light" onClick={() => setVisualMode("pink")}>Pink Theme</button>
+              <button className="brutalBtn light" onClick={() => setContrastMode(contrastMode === "high" ? "normal" : "high")}>Toggle Contrast</button>
             </div>
           </section>
 
-          <section id="section-preview" className={`panel preview`}>
-            <div className={`card-head`}>
-              <div>
-                <p className={`eyebrow`}>LIVE PREVIEW</p>
-                <h3>Generated Payload</h3>
-              </div>
-              <button className={`chip chip-dark`} id="btnRefresh" onClick={() => updatePreview('refresh')}>Refresh</button>
+          <section className="panelCard">
+            <h3>Player Moderation</h3>
+            <p>Mute, kick or ban players in the selected room.</p>
+
+            <div className="inlineControls">
+              <label>
+                Player
+                <select value={targetPlayerId} onChange={(e) => setTargetPlayerId(e.target.value)}>
+                  {selectedRoom?.players.map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.nickname} ({player.id.slice(0, 6)})
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-            <pre id="previewText" className={`preview-box`}></pre>
+
+            <div className="buttonGrid">
+              <button className="brutalBtn warn" onClick={() => void playerAction("mute")}>Mute</button>
+              <button className="brutalBtn danger" onClick={() => void playerAction("kick")}>Kick</button>
+              <button className="brutalBtn danger" onClick={() => void playerAction("ban")}>Ban</button>
+            </div>
           </section>
 
-          <section className={`panel card`}>
-            <div className={`card-head`}>
-              <div>
-                <p className={`eyebrow`}>AUDIT TRAIL</p>
-                <h3>Recent Actions</h3>
-              </div>
-              <span className={`tiny-label small-label`}>LOCAL</span>
+          <section className="panelCard">
+            <h3>Admin Broadcast</h3>
+            <p>Send a notice to everyone in the selected room.</p>
+
+            <div className="inlineControls">
+              <label className="wide">
+                Message
+                <input
+                  value={noticeMessage}
+                  onChange={(e) => setNoticeMessage(e.target.value)}
+                  maxLength={200}
+                  placeholder="Server restart in 2 minutes."
+                />
+              </label>
             </div>
-            <div id="logList" className={`log-list`}>
-              {history.map((h, i) => (
-                <div className={`log`} key={i}>
-                  <div>
-                    <strong>{safeText(h.title)}</strong>
-                    <span>{safeText(h.detail)}</span>
-                  </div>
-                  <time>{h.time}</time>
+
+            <button className="brutalBtn primary" onClick={() => void pushAnnouncement()}>
+              Send Notice
+            </button>
+          </section>
+
+          <section className="panelCard">
+            <h3>Live Activity</h3>
+            <div className="logFeed">
+              {activity.length === 0 ? <div className="mutedLine">No activity yet.</div> : null}
+              {activity.map((line, idx) => (
+                <div key={`${line}-${idx}`} className="logRow">
+                  {line}
                 </div>
               ))}
             </div>
@@ -359,4 +471,29 @@ export default function AdminPage() {
       </div>
     </div>
   );
+
+  async function apiCall<T>(path: string, init: RequestInit, authToken?: string): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
+    try {
+      const headers = new Headers(init.headers || {});
+      if (authToken) {
+        headers.set("Authorization", `Bearer ${authToken}`);
+      }
+
+      const response = await fetch(`${backendOrigin}${path}`, {
+        ...init,
+        headers
+      });
+
+      const json = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+
+      if (!response.ok) {
+        const message = typeof json?.error === "string" ? json.error : `Request failed (${response.status})`;
+        return { ok: false, error: message };
+      }
+
+      return { ok: true, data: json as T };
+    } catch {
+      return { ok: false, error: "Network request failed" };
+    }
+  }
 }

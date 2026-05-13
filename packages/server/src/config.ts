@@ -45,6 +45,7 @@ export const config = {
   clientOrigins,
   adminUsername: process.env.ADMIN_USERNAME ?? 'Frontman',
   adminPasswordHash: process.env.ADMIN_PASSWORD_HASH,
+  adminSessionSecret: process.env.ADMIN_SESSION_SECRET,
   appEncryptionKey: process.env.APP_ENCRYPTION_KEY
 };
 

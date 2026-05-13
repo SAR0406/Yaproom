@@ -3,7 +3,13 @@ import type { Server } from 'socket.io';
 import type { ClientToServerEvents, RoomState, ServerToClientEvents } from '@yapzi/shared';
 import { z } from 'zod';
 import { getRoom, listRooms, removeRoom, saveRoom } from './roomStore.js';
-import { parseBasicAuth, verifyAdminCredentials } from './security.js';
+import {
+  createAdminSessionToken,
+  parseBasicAuth,
+  parseBearerAuth,
+  verifyAdminCredentials,
+  verifyAdminSessionToken
+} from './security.js';
 import { recordRoomEvent } from './db.js';
 import { assertSafeText } from './contentSafety.js';
 
@@ -22,10 +28,54 @@ const announcementSchema = z.object({
   message: z.string().min(1).max(200)
 });
 
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1)
+});
+
+const roomSettingsPatchSchema = z.object({
+  chaosLevel: z.enum(['low', 'medium', 'high']).optional(),
+  roundLengthSec: z.number().int().min(15).max(600).optional(),
+  allowLateJoin: z.boolean().optional(),
+  allowSpectators: z.boolean().optional(),
+  anonymousMode: z.boolean().optional(),
+  voiceEnabled: z.boolean().optional()
+});
+
 export function registerAdminRoutes(
   app: FastifyInstance,
   io: Server<ClientToServerEvents, ServerToClientEvents>
 ) {
+  app.post('/admin/login', async (request, reply) => {
+    const parsed = loginSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid login payload' });
+    }
+
+    const { username, password } = parsed.data;
+    if (!verifyAdminCredentials(username, password)) {
+      return reply.code(401).send({ error: 'Invalid username or password' });
+    }
+
+    const token = createAdminSessionToken(username);
+    const session = verifyAdminSessionToken(token);
+
+    return {
+      ok: true,
+      token,
+      expiresAt: session?.expiresAt ?? Date.now(),
+      username
+    };
+  });
+
+  app.get('/admin/session', async (request, reply) => {
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
+    }
+
+    return { ok: true };
+  });
+
   app.get('/admin', async (request, reply) => {
     if (!isAuthorized(request)) {
       return unauthorized(reply);
@@ -53,6 +103,67 @@ export function registerAdminRoutes(
         hostId: room.hostId
       }))
     };
+  });
+
+  app.get('/admin/rooms/:code', async (request, reply) => {
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
+    }
+
+    const code = parseRoomCodeParam(request.params);
+    if (!code) {
+      return reply.code(400).send({ error: 'Invalid request' });
+    }
+
+    const room = await getRoom(code);
+    if (!room) {
+      return reply.code(404).send({ error: 'Room not found' });
+    }
+
+    return {
+      room: {
+        code: room.code,
+        status: room.status,
+        hostId: room.hostId,
+        settings: room.settings,
+        players: room.players.map((player) => ({
+          id: player.id,
+          nickname: player.nickname,
+          isHost: player.isHost,
+          isMuted: player.isMuted,
+          score: player.score,
+          isConnected: player.isConnected
+        }))
+      }
+    };
+  });
+
+  app.post('/admin/rooms/:code/settings', async (request, reply) => {
+    if (!isAuthorized(request)) {
+      return unauthorized(reply);
+    }
+
+    const code = parseRoomCodeParam(request.params);
+    const parsed = roomSettingsPatchSchema.safeParse(request.body);
+    if (!code || !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid request' });
+    }
+
+    const room = await getRoom(code);
+    if (!room) {
+      return reply.code(404).send({ error: 'Room not found' });
+    }
+
+    room.settings = {
+      ...room.settings,
+      ...parsed.data
+    };
+
+    await saveRoom(room);
+    io.to(room.code).emit('room:update', room);
+    await recordRoomEvent(room.id, 'admin:settings', parsed.data);
+
+    return { ok: true, settings: room.settings };
   });
 
   app.post('/admin/rooms/:code/status', async (request, reply) => {
@@ -203,6 +314,14 @@ export function registerAdminRoutes(
 }
 
 function isAuthorized(request: FastifyRequest): boolean {
+  const bearerToken = parseBearerAuth(request);
+  if (bearerToken) {
+    const session = verifyAdminSessionToken(bearerToken);
+    if (session) {
+      return true;
+    }
+  }
+
   const credentials = parseBasicAuth(request);
   if (!credentials) {
     return false;

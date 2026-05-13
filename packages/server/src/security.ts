@@ -1,9 +1,17 @@
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual
+} from 'node:crypto';
 import type { FastifyRequest } from 'fastify';
 import { config } from './config.js';
 
 const ENCRYPTION_PREFIX = 'enc:v1';
 const SCRYPT_KEYLEN = 64;
+const ADMIN_TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
 
 export function parseBasicAuth(request: FastifyRequest): { username: string; password: string } | null {
   const authHeader = request.headers.authorization;
@@ -47,6 +55,58 @@ export function verifyAdminCredentials(username: string, password: string): bool
   }
 
   return timingSafeEqual(expected, derived);
+}
+
+export function parseBearerAuth(request: FastifyRequest): string | null {
+  const authHeader = request.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null;
+  }
+  const token = authHeader.slice('Bearer '.length).trim();
+  return token || null;
+}
+
+export function createAdminSessionToken(username: string, expiresInMs = ADMIN_TOKEN_TTL_MS): string {
+  const expiresAt = Date.now() + expiresInMs;
+  const payload = { username, expiresAt };
+  const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
+  const signature = signTokenPayload(encodedPayload);
+  return `${encodedPayload}.${signature}`;
+}
+
+export function verifyAdminSessionToken(token: string): { username: string; expiresAt: number } | null {
+  const [encodedPayload, signature] = token.split('.');
+  if (!encodedPayload || !signature) {
+    return null;
+  }
+
+  const expectedSignature = signTokenPayload(encodedPayload);
+  if (!timingSafeTextEqual(signature, expectedSignature)) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8')) as {
+      username?: string;
+      expiresAt?: number;
+    };
+
+    if (typeof payload.username !== 'string' || typeof payload.expiresAt !== 'number') {
+      return null;
+    }
+
+    if (payload.expiresAt <= Date.now()) {
+      return null;
+    }
+
+    if (!timingSafeTextEqual(payload.username, config.adminUsername)) {
+      return null;
+    }
+
+    return { username: payload.username, expiresAt: payload.expiresAt };
+  } catch {
+    return null;
+  }
 }
 
 export function encryptForStorage(payload: unknown): unknown {
@@ -120,4 +180,14 @@ function timingSafeTextEqual(a: string, b: string): boolean {
     return false;
   }
   return timingSafeEqual(left, right);
+}
+
+function signTokenPayload(payload: string): string {
+  const secret =
+    config.adminSessionSecret ||
+    config.appEncryptionKey ||
+    config.adminPasswordHash ||
+    'yapzi-dev-admin-secret';
+
+  return createHmac('sha256', secret).update(payload).digest('base64url');
 }
