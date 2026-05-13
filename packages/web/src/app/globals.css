@@ -400,6 +400,121 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEOBRUTALIST OVERRIDES
+   A lighter, chunky, playful neobrutalist layer that mirrors the admin
+   reference: thick black borders, offset shadows, cream paper background,
+   pastel buttons, heavy rounded corners.
+   These styles intentionally override the neon theme variables and provide
+   component-level rules used across the app.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Palette */
+  --nb-cream: #fff7dd;
+  --nb-ink: #0b0b0b;
+  --nb-mint: #7ef7c3;
+  --nb-cyan: #9ef7ff;
+  --nb-coral: #ff7a7a;
+  --nb-pink: #ff8ad1;
+  --nb-gold: #ffd27a;
+
+  /* Surfaces */
+  --space-black: var(--nb-cream);
+  --surface-card: #ffffff;
+  --surface-elevated: #fffaf0;
+
+  /* Text */
+  --text-primary: var(--nb-ink);
+  --text-secondary: rgba(11,11,11,0.65);
+  --text-muted: rgba(11,11,11,0.45);
+
+  /* Borders / shadows for the neobrutalist look */
+  --nb-border-thick: 10px;
+  --nb-shadow-offset-x: 12px;
+  --nb-shadow-offset-y: 12px;
+}
+
+/* Base page repaint */
+body {
+  background-image: linear-gradient(90deg, #f7ffd8 0%, #fff1f2 50%, #fff6d6 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+}
+
+/* Neobrutalist button — thick black border + offset shadow */
+.btn-game {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem 2.2rem;
+  border-radius: 18px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  border: var(--nb-border-thick) solid var(--nb-ink);
+  box-shadow: var(--nb-shadow-offset-x) var(--nb-shadow-offset-y) 0 0 var(--nb-ink);
+  transition: transform 160ms var(--ease-smooth), box-shadow 160ms var(--ease-smooth);
+}
+
+.btn-game:hover { transform: translateY(-2px); }
+.btn-game:active { transform: translateY(0); }
+
+/* Variants */
+.btn-primary { background: linear-gradient(180deg, var(--nb-mint) 0%, #7beebf 100%); color: var(--nb-ink); }
+.btn-secondary { background: linear-gradient(180deg, var(--nb-gold) 0%, #ffd88f 100%); color: var(--nb-ink); }
+.btn-danger { background: linear-gradient(180deg, var(--nb-coral) 0%, #ff9b9b 100%); color: var(--nb-ink); }
+.btn-ghost { background: var(--surface-card); color: var(--text-primary); border-style: solid; }
+
+/* Slightly larger sizes used in admin controls */
+.btn-lg { padding: 1rem 3rem; border-radius: 22px; font-size: 1.03rem; }
+.btn-xl { padding: 1.1rem 3.6rem; border-radius: 26px; font-size: 1.08rem; }
+
+/* Card — white surface with chunky black border and offset shadow */
+.card-game {
+  background: var(--surface-card);
+  border-radius: 22px;
+  border: var(--nb-border-thick) solid var(--nb-ink);
+  box-shadow: var(--nb-shadow-offset-x) var(--nb-shadow-offset-y) 0 0 var(--nb-ink);
+  padding: 1rem;
+}
+
+/* Input — pill-like with thick border */
+.input-game {
+  background: var(--surface-card);
+  border-radius: 14px;
+  border: 8px solid var(--nb-ink);
+  padding: 0.7rem 1rem;
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+.input-game:focus { box-shadow: 6px 6px 0 0 rgba(0,0,0,0.05); }
+
+/* Drawer override */
+.bg-surface { background: var(--surface-elevated) !important; }
+.rounded-t-3xl { border-top-left-radius: 26px !important; border-top-right-radius: 26px !important; }
+
+/* Utility to make large labeled sections look like the reference */
+.nb-section {
+  padding: 1.25rem;
+  border-radius: 22px;
+  border: var(--nb-border-thick) solid var(--nb-ink);
+  box-shadow: var(--nb-shadow-offset-x) var(--nb-shadow-offset-y) 0 0 var(--nb-ink);
+  background: var(--surface-card);
+}
+
+/* High-contrast headings */
+.font-display { font-weight: 900; color: var(--nb-ink); }
+
+/* Small helpers */
+.rounded-pill { border-radius: 9999px; }
+
+
 @keyframes status-pulse-error {
   0%, 100% {
     opacity: 1;
