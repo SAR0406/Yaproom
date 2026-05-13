@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import styles from './admin.module.css';
+import './admin.css';
 
 type LogItem = { title: string; detail: string; time: string };
 
@@ -141,211 +141,211 @@ export default function AdminPage() {
   function saveDraft(){ localStorage.setItem('mqtt_admin_draft', JSON.stringify(readForm())); pushLog('SAVE','Draft saved locally'); const status = document.getElementById('statusText'); if (status) status.textContent = 'SAVED'; }
 
   return (
-    <div className={styles.root}>
-      <div className={styles.noise}></div>
-      <div className={`${styles.orb} ${styles.a}`}></div>
-      <div className={`${styles.orb} ${styles.b}`}></div>
-      <div className={`${styles.orb} ${styles.c}`}></div>
+    <div className="root">
+      <div className="noise"></div>
+      <div className={`orb a`}></div>
+      <div className={`orb b`}></div>
+      <div className={`orb c`}></div>
 
-      <div className={styles.shell}>
-        <aside className={`${styles.sidebar} ${styles.panel}`}>
-          <div className={styles.brand}>
-            <div className={styles.badge}>MQTT</div>
+      <div className="shell">
+        <aside className={`sidebar panel`}>
+          <div className="brand">
+            <div className="badge">MQTT</div>
             <div>
               <h1 id="brandTitle">ADMIN PANEL</h1>
               <p>Neubrutal control center</p>
             </div>
           </div>
 
-          <div className={styles['status-card']}>
-            <div className={styles.dot}></div>
+          <div className={`status-card`}>
+            <div className={`dot`}></div>
             <div>
-              <p className={styles['small-label']}>SYSTEM STATUS</p>
-              <div className={styles['status-value']} id="statusText">READY</div>
+              <p className={`small-label`}>SYSTEM STATUS</p>
+              <div className={`status-value`} id="statusText">READY</div>
             </div>
           </div>
 
-          <div className={styles.nav}>
-            <button className={styles.active} data-section="section-publish">Publish</button>
+          <div className={`nav`}>
+            <button className={`active`} data-section="section-publish">Publish</button>
             <button data-section="section-settings">Settings</button>
             <button data-section="section-controls">Controls</button>
             <button data-section="section-preview">Preview</button>
           </div>
 
-          <div className={styles['sidebar-footer']}>
-            <span className={styles['tiny-label'] + ' ' + styles['small-label']}>LIVE CLOCK</span>
-            <div className={styles.clock} id="clock">{clock}</div>
-            <div className={styles.subtle}>Local demo dashboard interface</div>
+          <div className={`sidebar-footer`}>
+            <span className={`tiny-label small-label`}>LIVE CLOCK</span>
+            <div className={`clock`} id="clock">{clock}</div>
+            <div className={`subtle`}>Local demo dashboard interface</div>
           </div>
         </aside>
 
-        <main className={styles.main}>
-          <section className={`${styles.topbar} ${styles.panel}`}>
+        <main className={`main`}>
+          <section className={`topbar panel`}>
             <div>
-              <p className={styles.eyebrow}>BROKER CONSOLE</p>
+              <p className={`eyebrow`}>BROKER CONSOLE</p>
               <h2>Professional MQTT Admin Interface</h2>
             </div>
 
-            <div className={styles.right + ' ' + styles.topbar}>
-              <button className={`${styles.chip} ${styles['chip-green']}`} id="btnConnect" onClick={connectBroker}>Connect</button>
-              <button className={`${styles.chip} ${styles['chip-dark']}`} id="btnReset" onClick={resetPanel}>Reset</button>
+            <div className={`right topbar`}>
+              <button className={`chip chip-green`} id="btnConnect" onClick={connectBroker}>Connect</button>
+              <button className={`chip chip-dark`} id="btnReset" onClick={resetPanel}>Reset</button>
             </div>
           </section>
 
-          <section className={styles.stats}>
-            <article className={`${styles.stat} ${styles.panel}`}>
+          <section className={`stats`}>
+            <article className={`stat panel`}>
               <span>Broker</span>
               <strong id="statBroker">Offline</strong>
             </article>
-            <article className={`${styles.stat} ${styles.panel}`}>
+            <article className={`stat panel`}>
               <span>Publish Topic</span>
               <strong id="statPublish">room_publish</strong>
             </article>
-            <article className={`${styles.stat} ${styles.panel}`}>
+            <article className={`stat panel`}>
               <span>Settings Topic</span>
               <strong id="statSettings">room_settings</strong>
             </article>
-            <article className={`${styles.stat} ${styles.panel}`}>
+            <article className={`stat panel`}>
               <span>Mode</span>
               <strong id="statMode">Standard</strong>
             </article>
           </section>
 
-          <section id="section-publish" className={`${styles.panel} ${styles.card}`}>
-            <div className={styles['card-head']}>
+          <section id="section-publish" className={`panel card`}>
+            <div className={`card-head`}>
               <div>
-                <p className={styles.eyebrow}>PUBLISH CONFIG</p>
+                <p className={`eyebrow`}>PUBLISH CONFIG</p>
                 <h3>Chat Payload Builder</h3>
               </div>
-              <span className={`${styles.pill} ${styles.pink}`}>_publish</span>
+              <span className={`pill pink`}>_publish</span>
             </div>
 
-            <div className={styles.fields}>
-              <div className={`${styles.grid} ${styles.two}`}>
-                <div className={styles.field}>
+            <div className={`fields`}>
+              <div className={`grid two`}>
+                <div className={`field`}>
                   <label>MQTT Broker URL</label>
                   <input id="broker" defaultValue="wss://mqtt-ws.example.com:8084/mqtt" />
                 </div>
-                <div className={styles.field}>
+                <div className={`field`}>
                   <label>Publish Topic</label>
                   <input id="publishTopic" defaultValue="room_publish" />
                 </div>
               </div>
 
-              <div className={`${styles.grid} ${styles.two}`}>
-                <div className={styles.field}>
+              <div className={`grid two`}>
+                <div className={`field`}>
                   <label>Username</label>
                   <input id="username" defaultValue="Tony Stark 💗" />
                 </div>
-                <div className={styles.field}>
+                <div className={`field`}>
                   <label>Message</label>
                   <input id="message" defaultValue="Hello everyone 🔥" />
                 </div>
               </div>
 
-              <div className={`${styles.grid} ${styles.two}`}>
-                <div className={styles.field}>
+              <div className={`grid two`}>
+                <div className={`field`}>
                   <label>Count</label>
                   <input id="count" type="number" defaultValue={100} />
                 </div>
-                <div className={styles.field}>
+                <div className={`field`}>
                   <label>Speed (ms)</label>
                   <input id="speed" type="number" defaultValue={300} />
                 </div>
               </div>
 
-              <div className={styles.actions}>
-                <button className={`${styles.btn} ${styles['btn-primary']}`} id="btnStandard" onClick={standardMode}>Standard Publish</button>
-                <button className={`${styles.btn} ${styles['btn-accent']}`} id="btnChaos" onClick={chaosMode}>Chaos Matrix</button>
-                <button className={`${styles.btn} ${styles['btn-neutral']}`} id="btnAllClear" onClick={allClear}>All Clear</button>
-                <button className={`${styles.btn} ${styles['btn-danger']}`} id="btnStop" onClick={stopAction}>Stop</button>
+              <div className={`actions`}>
+                <button className={`btn btn-primary`} id="btnStandard" onClick={standardMode}>Standard Publish</button>
+                <button className={`btn btn-accent`} id="btnChaos" onClick={chaosMode}>Chaos Matrix</button>
+                <button className={`btn btn-neutral`} id="btnAllClear" onClick={allClear}>All Clear</button>
+                <button className={`btn btn-danger`} id="btnStop" onClick={stopAction}>Stop</button>
               </div>
             </div>
           </section>
 
-          <section id="section-settings" className={`${styles.panel} ${styles.card}`}>
-            <div className={styles['card-head']}>
+          <section id="section-settings" className={`panel card`}>
+            <div className={`card-head`}>
               <div>
-                <p className={styles.eyebrow}>SETTINGS CONFIG</p>
+                <p className={`eyebrow`}>SETTINGS CONFIG</p>
                 <h3>Room Control Channel</h3>
               </div>
-              <span className={`${styles.pill} ${styles.cyan}`}>_settings</span>
+              <span className={`pill cyan`}>_settings</span>
             </div>
 
-            <div className={styles.fields}>
-              <div className={`${styles.grid} ${styles.two}`}>
-                <div className={styles.field}>
+            <div className={`fields`}>
+              <div className={`grid two`}>
+                <div className={`field`}>
                   <label>Settings Topic</label>
                   <input id="settingsTopic" defaultValue="room_settings" />
                 </div>
-                <div className={styles.field}>
+                <div className={`field`}>
                   <label>Panel Title</label>
                   <input id="panelTitle" defaultValue="MQTT Chaos Panel" />
                 </div>
               </div>
 
-              <div className={styles.actions}>
-                <button className={`${styles.btn} ${styles['btn-warning']}`} id="btnLock" onClick={lockChat}>Lock Chat</button>
-                <button className={`${styles.btn} ${styles['btn-success']}`} id="btnUnlock" onClick={unlockChat}>Unlock</button>
-                <button className={`${styles.btn} ${styles['btn-purple']}`} id="btnHide" onClick={hideChat}>Chat Hide</button>
-                <button className={`${styles.btn} ${styles['btn-blue']}`} id="btnPublic" onClick={publicChat}>Chat Public</button>
+              <div className={`actions`}>
+                <button className={`btn btn-warning`} id="btnLock" onClick={lockChat}>Lock Chat</button>
+                <button className={`btn btn-success`} id="btnUnlock" onClick={unlockChat}>Unlock</button>
+                <button className={`btn btn-purple`} id="btnHide" onClick={hideChat}>Chat Hide</button>
+                <button className={`btn btn-blue`} id="btnPublic" onClick={publicChat}>Chat Public</button>
               </div>
             </div>
           </section>
 
-          <section id="section-controls" className={`${styles.panel} ${styles.card}`}>
-            <div className={styles['card-head']}>
+          <section id="section-controls" className={`panel card`}>
+            <div className={`card-head`}>
               <div>
-                <p className={styles.eyebrow}>ADMIN CONTROLS</p>
+                <p className={`eyebrow`}>ADMIN CONTROLS</p>
                 <h3>Global Switches</h3>
               </div>
-              <span className={`${styles.pill} ${styles.gold}`}>LIVE</span>
+              <span className={`pill gold`}>LIVE</span>
             </div>
 
-            <div className={styles.controls}>
-              <div className={styles.toggle}>
+            <div className={`controls`}>
+              <div className={`toggle`}>
                 <span>Panel Visible</span>
-                <button id="toggleVisible" className={`${styles.switch} ${visible ? 'on' : ''}`} aria-label="Toggle panel visibility" onClick={() => { setVisible(v => !v); const el = document.getElementById('section-preview'); if (el) el.classList.toggle('hidden', !visible); pushLog('VISIBILITY', visible ? 'Panel hidden' : 'Panel shown'); updatePreview('visibility_changed'); }}>
-                  <span className={styles.knob}></span>
+                <button id="toggleVisible" className={`switch ${visible ? 'on' : ''}`} aria-label="Toggle panel visibility" onClick={() => { setVisible(v => !v); const el = document.getElementById('section-preview'); if (el) el.classList.toggle('hidden', !visible); pushLog('VISIBILITY', visible ? 'Panel hidden' : 'Panel shown'); updatePreview('visibility_changed'); }}>
+                  <span className={`knob`}></span>
                 </button>
               </div>
 
-              <div className={styles.toggle}>
+              <div className={`toggle`}>
                 <span>Auto Preview</span>
-                <button id="togglePreview" className={`${styles.switch} ${previewOn ? 'on' : ''}`} aria-label="Toggle live preview" onClick={() => { setPreviewOn(p => !p); const el = document.getElementById('section-preview'); if (el) el.classList.toggle('hidden', !previewOn); pushLog('PREVIEW', previewOn ? 'Preview disabled' : 'Preview enabled'); updatePreview('preview_toggled'); }}>
-                  <span className={styles.knob}></span>
+                <button id="togglePreview" className={`switch ${previewOn ? 'on' : ''}`} aria-label="Toggle live preview" onClick={() => { setPreviewOn(p => !p); const el = document.getElementById('section-preview'); if (el) el.classList.toggle('hidden', !previewOn); pushLog('PREVIEW', previewOn ? 'Preview disabled' : 'Preview enabled'); updatePreview('preview_toggled'); }}>
+                  <span className={`knob`}></span>
                 </button>
               </div>
             </div>
 
-            <div className={styles.actions} style={{ marginTop: 14 }}>
-              <button className={`${styles.btn} ${styles['btn-dark']}`} id="btnCopy" onClick={copyPreview}>Copy Preview</button>
-              <button className={`${styles.btn} ${styles['btn-dark']}`} id="btnSave" onClick={saveDraft}>Save Draft</button>
+            <div className={`actions`} style={{ marginTop: 14 }}>
+              <button className={`btn btn-dark`} id="btnCopy" onClick={copyPreview}>Copy Preview</button>
+              <button className={`btn btn-dark`} id="btnSave" onClick={saveDraft}>Save Draft</button>
             </div>
           </section>
 
-          <section id="section-preview" className={`${styles.panel} ${styles.preview}`}>
-            <div className={styles['card-head']}>
+          <section id="section-preview" className={`panel preview`}>
+            <div className={`card-head`}>
               <div>
-                <p className={styles.eyebrow}>LIVE PREVIEW</p>
+                <p className={`eyebrow`}>LIVE PREVIEW</p>
                 <h3>Generated Payload</h3>
               </div>
-              <button className={`${styles.chip} ${styles['chip-dark']}`} id="btnRefresh" onClick={() => updatePreview('refresh')}>Refresh</button>
+              <button className={`chip chip-dark`} id="btnRefresh" onClick={() => updatePreview('refresh')}>Refresh</button>
             </div>
-            <pre id="previewText" className={styles['preview-box']}></pre>
+            <pre id="previewText" className={`preview-box`}></pre>
           </section>
 
-          <section className={`${styles.panel} ${styles.card}`}>
-            <div className={styles['card-head']}>
+          <section className={`panel card`}>
+            <div className={`card-head`}>
               <div>
-                <p className={styles.eyebrow}>AUDIT TRAIL</p>
+                <p className={`eyebrow`}>AUDIT TRAIL</p>
                 <h3>Recent Actions</h3>
               </div>
-              <span className={`${styles['tiny-label']} ${styles['small-label']}`}>LOCAL</span>
+              <span className={`tiny-label small-label`}>LOCAL</span>
             </div>
-            <div id="logList" className={styles['log-list']}>
+            <div id="logList" className={`log-list`}>
               {history.map((h, i) => (
-                <div className={styles.log} key={i}>
+                <div className={`log`} key={i}>
                   <div>
                     <strong>{safeText(h.title)}</strong>
                     <span>{safeText(h.detail)}</span>
