@@ -126,15 +126,12 @@ export function Input({
             // Size
             sizeStyles[inputSize],
             // Icon offset
-            icon && iconSizeStyles[inputSize],
+            icon ? iconSizeStyles[inputSize] : undefined,
             // Trailing action offset
-            trailingAction && "pr-12",
+            trailingAction ? "pr-12" : undefined,
             // Error state
-            hasError && [
-              "border-neon-red/60",
-              "shadow-[0_0_15px_rgba(255,23,68,0.2),inset_0_0_15px_rgba(255,23,68,0.05)]",
-              "focus-within:border-neon-red focus-within:shadow-[0_0_25px_rgba(255,23,68,0.3)]",
-            ],
+            hasError &&
+              "border-neon-red/60 shadow-[0_0_15px_rgba(255,23,68,0.2),inset_0_0_15px_rgba(255,23,68,0.05)] focus-within:border-neon-red focus-within:shadow-[0_0_25px_rgba(255,23,68,0.3)]",
             // Disabled
             disabled && "opacity-40 cursor-not-allowed",
             className,

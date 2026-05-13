@@ -124,11 +124,8 @@ export function Card({
     variantGlows[variant],
     paddingStyles[padding],
     interactive && "cursor-pointer",
-    highlighted && [
-      "border-neon-cyan/50",
-      "shadow-[0_0_30px_rgba(0,245,255,0.2),0_0_80px_rgba(0,245,255,0.08)]",
-      "ring-1 ring-neon-cyan/30",
-    ],
+    highlighted &&
+      "border-neon-cyan/50 shadow-[0_0_30px_rgba(0,245,255,0.2),0_0_80px_rgba(0,245,255,0.08)] ring-1 ring-neon-cyan/30",
     className,
   );
 
