@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { TopNav } from "@/components/TopNav";
 import { RoomGuard } from "@/components/RoomGuard";
 import { RoomCodeBlock } from "@/components/RoomCodeBlock";
 import { Badge } from "@/components/Badge";
@@ -31,28 +32,31 @@ export function RoomLayout({
   return (
     <RoomGuard>
       {(room) => (
-        <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6 md:py-6">
-          <header className="glass-panel card-game flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-2">
-              <p className="eyebrow">ROOM SESSION</p>
-              <h1 className="text-3xl md:text-5xl text-shimmer">Room {room.code}</h1>
-              <p className="text-sm text-text-secondary">Status: {room.status} · {room.players.length} players connected</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <RoomCodeBlock code={room.code} />
-              <Badge variant="lime" pulse>{room.players.length} players</Badge>
-            </div>
-          </header>
+        <div className="brutal-shell">
+          <TopNav />
+          <main className="brutal-main">
+            <header className="brutal-topbar brutal-panel">
+              <div>
+                <p className="eyebrow">ROOM SESSION</p>
+                <h2>Room {room.code}</h2>
+                <p className="text-sm text-text-secondary">Status: {room.status} · {room.players.length} players connected</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <RoomCodeBlock code={room.code} />
+                <Badge variant="lime" pulse>{room.players.length} players</Badge>
+              </div>
+            </header>
 
-          <nav className="grid gap-3 rounded-3xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-5">
-            <Link href={`/room/${room.code}`} className="btn-game btn-primary justify-center text-center">Lobby</Link>
-            <Link href={`/room/${room.code}/game`} className="btn-game btn-secondary justify-center text-center">Game</Link>
-            <Link href={`/room/${room.code}/results`} className="btn-game btn-ghost justify-center text-center">Results</Link>
-            <Link href={`/room/${room.code}/scoreboard`} className="btn-game btn-success justify-center text-center">Scoreboard</Link>
-            <Link href={`/room/${room.code}/admin`} className="btn-game btn-ghost justify-center text-center">Admin</Link>
-          </nav>
+            <nav className="brutal-grid-two">
+              <Link href={`/room/${room.code}`} className="btn-game btn-primary justify-center text-center">Lobby</Link>
+              <Link href={`/room/${room.code}/game`} className="btn-game btn-secondary justify-center text-center">Game</Link>
+              <Link href={`/room/${room.code}/results`} className="btn-game btn-ghost justify-center text-center">Results</Link>
+              <Link href={`/room/${room.code}/scoreboard`} className="btn-game btn-success justify-center text-center">Scoreboard</Link>
+              <Link href={`/room/${room.code}/admin`} className="btn-game btn-ghost justify-center text-center">Admin</Link>
+            </nav>
 
-          {children(room)}
+            {children(room)}
+          </main>
         </div>
       )}
     </RoomGuard>

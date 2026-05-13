@@ -1,25 +1,65 @@
+"use client";
+
 import Link from "next/link";
-import { Button } from "@/components/Button";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/cn";
+
+const navItems = [
+  { href: "/", label: "Dashboard" },
+  { href: "/join", label: "Join" },
+  { href: "/create", label: "Create" },
+  { href: "/game-modes", label: "Game Modes" },
+  { href: "/how-it-works", label: "How It Works" },
+  { href: "/admin", label: "Admin" },
+];
 
 export function TopNav() {
+  const pathname = usePathname();
+  const [clock, setClock] = useState("--:--:--");
+
+  useEffect(() => {
+    const tick = () => setClock(new Date().toLocaleTimeString());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <nav className="glass-panel card-game p-3 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-4">
-        <Link href="/" className="text-2xl font-display text-shimmer">
-          Yapzi
-        </Link>
-        <div className="hidden md:flex items-center gap-3 text-sm text-text-secondary">
-          <Link href="/how-it-works">How it works</Link>
-          <Link href="/game-modes">Game modes</Link>
-          <Link href="/join">Join room</Link>
+    <aside className="brutal-sidebar brutal-panel">
+      <div className="brutal-brand">
+        <div className="brutal-badge">YAP</div>
+        <div>
+          <h1>YAPROOM</h1>
+          <p>Neubrutal control interface</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Link href="/create">
-          <Button size="sm">Create room</Button>
-        </Link>
+      <div className="brutal-status-card">
+        <div className="brutal-dot" />
+        <div>
+          <p className="brutal-small-label">SYSTEM STATUS</p>
+          <div className="brutal-status-value">LIVE</div>
+        </div>
       </div>
-    </nav>
+
+      <nav className="brutal-nav">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(pathname === item.href && "active")}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="brutal-sidebar-footer">
+        <span className="brutal-small-label">LIVE CLOCK</span>
+        <div className="brutal-clock">{clock}</div>
+        <div className="brutal-subtle">Unified frontend visual shell</div>
+      </div>
+    </aside>
   );
 }

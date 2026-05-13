@@ -10,9 +10,21 @@ export function PageLayout({
   className?: string;
 }) {
   return (
-    <div className={cn("mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6 md:py-6", className)}>
+    <div className={cn("brutal-shell", className)}>
       <TopNav />
-      <main className="grid gap-6">{children}</main>
+      <main className="brutal-main">
+        <section className="brutal-topbar brutal-panel">
+          <div>
+            <p className="eyebrow">YAPROOM FRONTEND</p>
+            <h2>Neubrutal Experience Layer</h2>
+          </div>
+          <div className="flex gap-2">
+            <span className="brutal-chip cyan">LIVE</span>
+            <span className="brutal-chip dark">SYNC</span>
+          </div>
+        </section>
+        {children}
+      </main>
     </div>
   );
 }
