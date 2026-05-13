@@ -1,4 +1,4 @@
-:root{
+:global {
   --bg:#f7e85f;
   --ink:#111111;
   --panel:#ffffff;
@@ -13,7 +13,8 @@
   --shadow-lg:12px 12px 0 var(--ink);
   --radius:28px;
   --radius-sm:18px;
-}
+
+
 
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
