@@ -33,9 +33,9 @@ export default function LobbyPage() {
         const readyCount = room.players.filter((entry) => entry.isReady).length;
 
         return (
-          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="space-y-4">
-              <Card className="space-y-4 bg-yellow-300">
+          <div className="gameplay-grid lobby-grid">
+            <div className="mission-column space-y-4">
+              <Card className="space-y-4 hud-card lobby-roster">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-black uppercase text-black">Lobby</h2>
                   {room.code ? <CopyInviteLink roomCode={room.code} /> : null}
@@ -67,7 +67,7 @@ export default function LobbyPage() {
                 </div>
               </Card>
 
-              <Card className="space-y-3 bg-sky-200">
+              <Card className="space-y-3 hud-card comms-panel">
                 <h3 className="text-lg font-black uppercase text-black">Meme + chat zone</h3>
                 <Input
                   label="Message"
@@ -120,8 +120,8 @@ export default function LobbyPage() {
               </Card>
             </div>
 
-            <div className="space-y-4">
-              <Card className="space-y-3 bg-lime-300">
+            <div className="director-column space-y-4">
+              <Card className="space-y-3 hud-card ready-panel">
                 <h3 className="text-lg font-black uppercase text-black">Ready check</h3>
                 <Button
                   variant={player?.isReady ? 'secondary' : 'primary'}
@@ -150,7 +150,7 @@ export default function LobbyPage() {
                 ) : null}
               </Card>
 
-              <Card className="space-y-3 bg-fuchsia-300">
+              <Card className="space-y-3 hud-card social-panel">
                 <h3 className="text-lg font-black uppercase text-black">Soundboard</h3>
                 <div className="flex flex-wrap gap-2">
                   <SoundButton label="Airhorn" profile="airhorn" />
@@ -159,7 +159,7 @@ export default function LobbyPage() {
                 </div>
               </Card>
 
-              <Card className="space-y-3 bg-orange-200">
+              <Card className="space-y-3 hud-card reaction-panel">
                 <h3 className="text-lg font-black uppercase text-black">Live emoji reactions</h3>
                 <ReactionBar onReact={(reaction) => playerId && sendReaction(playerId, reaction)} />
               </Card>

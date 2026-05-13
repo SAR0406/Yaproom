@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { TopNav } from "@/components/TopNav";
 import { RoomGuard } from "@/components/RoomGuard";
@@ -19,7 +20,16 @@ export function RoomLayout({
 }) {
   const roomInStore = useRoomStore((state) => state.room);
   const params = useParams<{ code: string }>();
+  const pathname = usePathname();
   const code = normalizeRoomCode(params.code);
+
+  const navItems = [
+    { label: "Lobby", href: `/room/${code}`, tone: "btn-primary" },
+    { label: "Game", href: `/room/${code}/game`, tone: "btn-secondary" },
+    { label: "Results", href: `/room/${code}/results`, tone: "btn-ghost" },
+    { label: "Scoreboard", href: `/room/${code}/scoreboard`, tone: "btn-success" },
+    { label: "Admin", href: `/room/${code}/admin`, tone: "btn-ghost" },
+  ] as const;
 
   useEffect(() => {
     if (roomInStore || !code) return;
@@ -32,10 +42,10 @@ export function RoomLayout({
   return (
     <RoomGuard>
       {(room) => (
-        <div className="brutal-shell">
+        <div className="brutal-shell game-scene">
           <TopNav />
-          <main className="brutal-main">
-            <header className="brutal-topbar brutal-panel">
+          <main className="brutal-main game-main">
+            <header className="brutal-topbar brutal-panel room-hero">
               <div>
                 <p className="eyebrow">ROOM SESSION</p>
                 <h2>Room {room.code}</h2>
@@ -47,15 +57,19 @@ export function RoomLayout({
               </div>
             </header>
 
-            <nav className="brutal-grid-two">
-              <Link href={`/room/${room.code}`} className="btn-game btn-primary justify-center text-center">Lobby</Link>
-              <Link href={`/room/${room.code}/game`} className="btn-game btn-secondary justify-center text-center">Game</Link>
-              <Link href={`/room/${room.code}/results`} className="btn-game btn-ghost justify-center text-center">Results</Link>
-              <Link href={`/room/${room.code}/scoreboard`} className="btn-game btn-success justify-center text-center">Scoreboard</Link>
-              <Link href={`/room/${room.code}/admin`} className="btn-game btn-ghost justify-center text-center">Admin</Link>
+            <nav className="room-nav">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`btn-game ${item.tone} room-nav-link ${pathname === item.href ? 'active' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
 
-            {children(room)}
+            <section className="room-stage">{children(room)}</section>
           </main>
         </div>
       )}

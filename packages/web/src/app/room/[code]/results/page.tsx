@@ -59,8 +59,8 @@ function ResultsContent({ room }: { room: RoomState }) {
   const shareText = `Yapzi ${room.code}: ${recap.summary} ${recap.roast}`;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-      <Card>
+    <div className="gameplay-grid">
+      <Card className="hud-card mission-brief">
         <h2 className="text-2xl font-semibold text-foreground">Round recap</h2>
         <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted">
           Source: {recapSourceLabel}
@@ -88,7 +88,7 @@ function ResultsContent({ room }: { room: RoomState }) {
           </p>
         </div>
       </Card>
-      <Card className="space-y-3">
+      <Card className="space-y-3 hud-card director-tools">
         <h3 className="text-lg font-semibold text-foreground">Next up</h3>
         <p className="text-sm text-muted">Queue: {room.queue.join(' → ')}</p>
         {isHost ? <Button onClick={() => nextRound()}>Start next round</Button> : null}

@@ -284,9 +284,9 @@ export default function GamePage() {
         const progress = Math.max(0, Math.min(100, 100 - (elapsed / duration) * 100));
 
         return (
-          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="space-y-4">
-              <PromptCard>
+          <div className="gameplay-grid">
+            <div className="mission-column space-y-4">
+              <PromptCard className="hud-card mission-brief">
                 <h2 className="text-2xl font-bold text-foreground">
                   {gameModeLabels[room.game.mode]} — {describePhase(phase)}
                 </h2>
@@ -296,7 +296,7 @@ export default function GamePage() {
               </PromptCard>
 
               {phase === 'role' && room.game.mode === 'imposter' ? (
-                <Card>
+                <Card className="hud-card role-panel">
                   <h3 className="text-lg font-semibold text-foreground">Your secret role</h3>
                   <p className="mt-2 text-sm text-muted">
                     {playerId && imposterId && playerId === imposterId
@@ -308,7 +308,7 @@ export default function GamePage() {
               ) : null}
 
               {(phase === 'action' || phase === 'timer' || phase === 'vote') && room.game.mode === 'imposter' ? (
-                <Card className="space-y-4">
+                <Card className="space-y-4 hud-card comms-panel">
                   <h3 className="text-lg font-semibold text-foreground">Discussion Channel</h3>
                   <p className="text-xs text-muted">
                     Talk, bluff, and investigate. Vote after discussion.
@@ -373,7 +373,7 @@ export default function GamePage() {
               ) : null}
 
               {phase === 'guess' ? (
-                <Card className="space-y-3">
+                <Card className="space-y-3 hud-card decision-panel">
                   <Input
                     label={room.game.mode === 'split' ? 'Choice: split or steal' : 'Your guess'}
                     value={guessText}
@@ -393,7 +393,7 @@ export default function GamePage() {
               ) : null}
 
               {phase === 'action' && room.game.mode === 'confession' ? (
-                <Card className="space-y-3">
+                <Card className="space-y-3 hud-card decision-panel">
                   <Input
                     label="Anonymous confession"
                     value={confessionText}
@@ -413,7 +413,7 @@ export default function GamePage() {
               ) : null}
 
               {phase === 'action' && room.game.mode === 'drawing' ? (
-                <Card className="space-y-3">
+                <Card className="space-y-3 hud-card action-panel">
                   <h3 className="text-lg font-semibold text-foreground">Quick sketch action</h3>
                   <Button
                     onClick={() =>
@@ -433,7 +433,7 @@ export default function GamePage() {
               ) : null}
 
               {phase === 'action' && room.game.mode === 'split' && inSplitPair ? (
-                <Card className="space-y-3">
+                <Card className="space-y-3 hud-card decision-panel">
                   <h3 className="text-lg font-semibold text-foreground">Split or steal?</h3>
                   <div className="flex gap-2">
                     <Button onClick={() => playerId && submitGuess({ playerId, guess: 'split' })}>Split</Button>
@@ -449,7 +449,7 @@ export default function GamePage() {
               ) : null}
 
               {(phase === 'reveal' || phase === 'recap') && room.game.mode === 'imposter' ? (
-                <Card className="space-y-3">
+                <Card className="space-y-3 hud-card intel-panel">
                   <h3 className="text-lg font-semibold text-foreground">Vote Poll</h3>
                   {voteLeaders.length ? (
                     <div className="space-y-2">
@@ -471,12 +471,12 @@ export default function GamePage() {
               ) : null}
             </div>
 
-            <div className="space-y-4">
-              <Card className="flex flex-col items-center gap-4">
+            <div className="director-column space-y-4">
+              <Card className="flex flex-col items-center gap-4 hud-card director-clock">
                 <TimerRing progress={progress} label="Round time" />
                 {isHost ? <Button onClick={() => nextRound()}>Advance phase</Button> : null}
               </Card>
-              <Card className="space-y-3">
+              <Card className="space-y-3 hud-card director-tools">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted">
                   AI chaos cards
                 </h3>
