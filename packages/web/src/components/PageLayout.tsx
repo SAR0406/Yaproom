@@ -10,13 +10,9 @@ export function PageLayout({
   className?: string;
 }) {
   return (
-    <div className={cn("app-shell flex min-h-screen flex-col", className)}>
-      <div className="app-sidebar">
-        <TopNav />
-      </div>
-      <main className={cn("app-main mx-auto w-full max-w-6xl flex-1 flex-col gap-12 px-6 pb-16")}>
-        {children}
-      </main>
+    <div className={cn("mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6 md:py-6", className)}>
+      <TopNav />
+      <main className="grid gap-6">{children}</main>
     </div>
   );
 }

@@ -19,20 +19,18 @@ export default function RootLayout({
       className="h-full antialiased"
       style={
         {
-          '--font-bebas-neue': '"Bebas Neue", Impact, "Arial Narrow", sans-serif',
+          '--font-bebas-neue': '"Space Grotesk", system-ui, sans-serif',
           '--font-dm-sans':
-            '"DM Sans", Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+            '"Space Grotesk", system-ui, sans-serif',
           '--font-jetbrains-mono':
             '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
         } as CSSProperties
       }
     >
       <body className="min-h-full flex flex-col">
-            <Providers>
-              <div className="neub-root">
-                {children}
-              </div>
-            </Providers>
+        <Providers>
+          <div className="neub-root">{children}</div>
+        </Providers>
       </body>
     </html>
   );
