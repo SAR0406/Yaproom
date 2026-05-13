@@ -15,7 +15,7 @@ export function CopyInviteLink({ roomCode }: { roomCode: string }) {
   };
 
   return (
-    <Button variant="secondary" onClick={handleCopy}>
+    <Button variant="secondary" size="sm" onClick={handleCopy}>
       {copied ? "Copied!" : "Copy invite link"}
     </Button>
   );

@@ -11,13 +11,13 @@ export function ScoreBoard({ players }: ScoreBoardProps) {
       {sorted.map((player, index) => (
         <div
           key={player.id}
-          className="flex items-center justify-between rounded-2xl border border-white/10 bg-surface px-4 py-3"
+          className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl"
         >
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted">#{index + 1}</span>
-            <span className="font-semibold text-foreground">{player.nickname}</span>
+            <span className="badge badge-ghost">#{index + 1}</span>
+            <span className="font-semibold text-text-primary">{player.nickname}</span>
           </div>
-          <span className="text-sm font-semibold text-secondary">
+          <span className="score-badge">
             {player.score} pts
           </span>
         </div>

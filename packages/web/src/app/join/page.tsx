@@ -29,12 +29,15 @@ export default function JoinPage() {
 
   return (
     <PageLayout>
-      <Card className="max-w-xl">
-        <h1 className="text-3xl font-black uppercase text-black">Join a room</h1>
-        <p className="mt-2 text-sm font-semibold text-black/80">
-          Drop your nickname and room code. That&apos;s it.
-        </p>
-        <div className="mt-6 grid gap-4">
+      <Card className="max-w-2xl space-y-5">
+        <div className="space-y-2">
+          <p className="eyebrow">Join flow</p>
+          <h1 className="text-4xl text-shimmer">Drop into a room</h1>
+          <p className="text-sm text-text-secondary">
+            Enter your nickname and room code to connect to the live game room.
+          </p>
+        </div>
+        <div className="grid gap-4">
           <Input
             label="Nickname"
             placeholder="your best yap name"
@@ -52,7 +55,7 @@ export default function JoinPage() {
             }
           />
           {error ? (
-            <p className="rounded-xl border-[2px] border-black bg-red-300 px-3 py-2 text-sm font-semibold text-black">
+            <p className="rounded-2xl border border-neon-red/30 bg-neon-red/10 px-3 py-2 text-sm font-semibold text-neon-red">
               {error.message}
             </p>
           ) : null}

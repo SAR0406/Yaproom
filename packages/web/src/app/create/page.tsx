@@ -57,12 +57,15 @@ export default function CreateRoomPage() {
 
   return (
     <PageLayout>
-      <Card className="max-w-2xl">
-        <h1 className="text-3xl font-black uppercase text-black">Create a room</h1>
-        <p className="mt-2 text-sm font-semibold text-black/80">
-          Set the vibe and launch the chaos.
-        </p>
-        <div className="mt-6 grid gap-4">
+      <Card className="max-w-2xl space-y-5">
+        <div className="space-y-2">
+          <p className="eyebrow">Host setup</p>
+          <h1 className="text-4xl text-shimmer">Create a room</h1>
+          <p className="text-sm text-text-secondary">
+            Set the pace, choose the queue, and spin up your live Yaproom session.
+          </p>
+        </div>
+        <div className="grid gap-4">
           <Input
             label="Host nickname"
             placeholder="chaos commander"
@@ -78,9 +81,9 @@ export default function CreateRoomPage() {
             max={MAX_PLAYERS}
             onChange={(event) => setMaxPlayers(event.target.value)}
           />
-          <div className="rounded-2xl border-[3px] border-black bg-yellow-200 px-4 py-3 shadow-[4px_4px_0_0_#000]">
-            <p className="text-sm font-bold text-black/70">Default setlist</p>
-            <p className="text-sm font-bold text-black">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 shadow-[0_0_28px_rgba(0,245,255,0.08)] backdrop-blur-xl">
+            <p className="text-sm font-bold text-text-secondary">Default setlist</p>
+            <p className="text-sm font-bold text-text-primary">
               {modes.join(" → ")}
             </p>
           </div>

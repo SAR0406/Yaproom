@@ -31,48 +31,27 @@ export function RoomLayout({
   return (
     <RoomGuard>
       {(room) => (
-        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-6 py-6">
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border-[3px] border-black bg-cyan-300 px-5 py-4 text-black shadow-[8px_8px_0_0_#000]">
-            <div className="space-y-1">
-              <h1 className="text-2xl font-black uppercase">
-                Room {room.code}
-              </h1>
-              <p className="text-sm font-semibold">Status: {room.status}</p>
+        <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6 md:py-6">
+          <header className="glass-panel card-game flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-2">
+              <p className="eyebrow">ROOM SESSION</p>
+              <h1 className="text-3xl md:text-5xl text-shimmer">Room {room.code}</h1>
+              <p className="text-sm text-text-secondary">Status: {room.status} · {room.players.length} players connected</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <RoomCodeBlock code={room.code} />
-              <Badge>{room.players.length} players</Badge>
+              <Badge variant="lime" pulse>{room.players.length} players</Badge>
             </div>
           </header>
-          <nav className="flex flex-wrap gap-3 text-sm font-bold text-black">
-            <Link href={`/room/${room.code}`} className="rounded-xl border-[2px] border-black bg-white px-3 py-1 shadow-[3px_3px_0_0_#000]">
-              Lobby
-            </Link>
-            <Link
-              href={`/room/${room.code}/game`}
-              className="rounded-xl border-[2px] border-black bg-white px-3 py-1 shadow-[3px_3px_0_0_#000]"
-            >
-              Game
-            </Link>
-            <Link
-              href={`/room/${room.code}/results`}
-              className="rounded-xl border-[2px] border-black bg-white px-3 py-1 shadow-[3px_3px_0_0_#000]"
-            >
-              Results
-            </Link>
-            <Link
-              href={`/room/${room.code}/scoreboard`}
-              className="rounded-xl border-[2px] border-black bg-white px-3 py-1 shadow-[3px_3px_0_0_#000]"
-            >
-              Scoreboard
-            </Link>
-            <Link
-              href={`/room/${room.code}/admin`}
-              className="rounded-xl border-[2px] border-black bg-white px-3 py-1 shadow-[3px_3px_0_0_#000]"
-            >
-              Admin
-            </Link>
+
+          <nav className="grid gap-3 rounded-3xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-5">
+            <Link href={`/room/${room.code}`} className="btn-game btn-primary justify-center text-center">Lobby</Link>
+            <Link href={`/room/${room.code}/game`} className="btn-game btn-secondary justify-center text-center">Game</Link>
+            <Link href={`/room/${room.code}/results`} className="btn-game btn-ghost justify-center text-center">Results</Link>
+            <Link href={`/room/${room.code}/scoreboard`} className="btn-game btn-success justify-center text-center">Scoreboard</Link>
+            <Link href={`/room/${room.code}/admin`} className="btn-game btn-ghost justify-center text-center">Admin</Link>
           </nav>
+
           {children(room)}
         </div>
       )}

@@ -35,8 +35,8 @@ export function PlayerChip({
       variants={listItem}
       custom={index}
       className={cn(
-        "player-chip flex items-center gap-3 rounded-xl border px-4 py-3 transition-all duration-200",
-        "bg-surface/60 backdrop-blur-md",
+        "player-chip flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 backdrop-blur-xl",
+        "bg-white/5",
         isReady
           ? "border-neon-lime/40 shadow-[0_0_15px_rgba(57,255,20,0.1)]"
           : "border-white/10",

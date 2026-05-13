@@ -40,7 +40,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "badge inline-flex items-center rounded-full border font-display font-bold uppercase tracking-[0.05em] select-none",
+        "badge inline-flex items-center rounded-full border font-display font-bold uppercase tracking-[0.08em] select-none backdrop-blur-xl",
         variantStyles[variant],
         sizeStyles[size],
         pulse && "animate-status-pulse",

@@ -10,6 +10,12 @@ import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 
+const bullets = [
+  "Neon-brutal cards, thick outlines, loud gradients",
+  "Quick room flow for join / create / host",
+  "Ready for voice, chat, voting, and live game states",
+];
+
 export default function Home() {
   const router = useRouter();
   const [tab, setTab] = useState<"join" | "create">("join");
@@ -31,83 +37,60 @@ export default function Home() {
     router.push(`/create?name=${encodeURIComponent(name.trim())}`);
   };
 
-  const actionStream = [
-    "SYSTEM BOOT: Matchmaking relays online",
-    "SQUAD CHECK: Invite links secured",
-    "VOICE LEVELS: Chaos calibration complete",
-  ];
-
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
-      <section className="space-y-4 text-center">
-        <p className="inline-flex items-center gap-2 rounded-full border border-lime-300/50 bg-lime-400/10 px-4 py-1 text-xs font-bold uppercase tracking-[0.12em] text-lime-200 shadow-[0_0_18px_rgba(57,255,20,0.25)]">
-          <span className="status-dot" aria-hidden />
-          Live party grid online
-        </p>
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-black uppercase tracking-tight md:text-7xl"
-        >
-          Join fast. Fire faster.
-        </motion.h1>
-        <p className="mx-auto max-w-3xl text-sm text-cyan-50/80 md:text-lg">
-          Minimal commands. Maximum impact. Spin up a room, lock in your squad,
-          and launch straight into high-energy multiplayer sessions.
-        </p>
-      </section>
+    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6 md:py-6">
+      <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <Card className="space-y-6 overflow-hidden">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="badge badge-lime animate-float">Live party grid</span>
+            <span className="badge badge-cyan">Neon brutal UI</span>
+            <span className="badge badge-magenta">Fast room flow</span>
+          </div>
 
-      <section className="grid gap-5 lg:grid-cols-[320px_1fr]">
-        <Card className="space-y-5 lg:sticky lg:top-8 lg:h-fit">
-          <h2 className="text-lg font-black uppercase tracking-[0.1em] text-cyan-100">
-            Player Card
-          </h2>
-          <div className="rounded-2xl border border-cyan-300/30 bg-cyan-400/8 p-4">
-            <p className="text-xs uppercase tracking-[0.1em] text-cyan-200/80">Status</p>
-            <p className="mt-1 text-2xl font-black uppercase text-lime-200">Ready to engage</p>
-            <p className="mt-2 text-xs text-slate-200/70">Level 07 Lobby Instigator</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-center text-xs font-bold uppercase tracking-[0.08em]">
-            <div className="rounded-xl border border-fuchsia-300/35 bg-fuchsia-500/10 p-2 text-fuchsia-100">
-              Sessions 42
-            </div>
-            <div className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 p-2 text-cyan-100">
-              Wins 18
-            </div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-[0.09em] text-cyan-100/90">
-              Action Stream
+          <div className="space-y-4">
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-4xl text-5xl md:text-7xl"
+            >
+              Build chaos in a room that feels like a neon arcade.
+            </motion.h1>
+            <p className="max-w-2xl text-base text-text-secondary md:text-lg">
+              Yaproom mixes live games, voice, voting, and a bold visual system built for fast friend-group chaos.
             </p>
-            <div className="space-y-3 text-xs text-slate-200/78">
-              {actionStream.map((entry) => (
-                <p key={entry} className="action-stream-line">
-                  {entry}
-                </p>
-              ))}
-            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            {bullets.map((item) => (
+              <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-text-secondary shadow-[0_0_24px_rgba(0,0,0,0.15)]">
+                {item}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Button variant="primary" onClick={handleCreate}>Create room</Button>
+            <Button variant="secondary" onClick={() => setTab("join")}>Join room</Button>
+            <Button variant="ghost" onClick={() => router.push('/game-modes')}>View modes</Button>
           </div>
         </Card>
 
         <Card className="space-y-5">
-          <h2 className="text-lg font-black uppercase tracking-[0.1em] text-fuchsia-100">
-            Command Terminal
-          </h2>
-
+          <div className="space-y-2">
+            <p className="eyebrow">Session controls</p>
+            <h2 className="text-3xl text-shimmer">Launch panel</h2>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <Button variant={tab === "join" ? "primary" : "ghost"} onClick={() => setTab("join")}>
-              Mission Select: Join
+              Join
             </Button>
-            <Button
-              variant={tab === "create" ? "secondary" : "ghost"}
-              onClick={() => setTab("create")}
-            >
-              Mission Select: Create
+            <Button variant={tab === "create" ? "secondary" : "ghost"} onClick={() => setTab("create")}>
+              Create
             </Button>
           </div>
 
           <Input
-            label="Pilot Handle"
+            label="Player name"
             placeholder="Enter your codename"
             value={name}
             maxLength={NICKNAME_MAX_LENGTH}
@@ -117,55 +100,45 @@ export default function Home() {
           {tab === "join" ? (
             <>
               <Input
-                label="Access Sequence"
+                label="Room code"
                 placeholder="ABCD"
                 value={normalizedCode}
                 maxLength={ROOM_CODE_LENGTH}
-                onChange={(event) =>
-                  setRoomCode(normalizeRoomCode(event.target.value))
-                }
+                onChange={(event) => setRoomCode(normalizeRoomCode(event.target.value))}
               />
               <Button disabled={!canJoin} onClick={handleJoin}>
-                Initialize Link
+                Enter room
               </Button>
             </>
           ) : (
-            <Input
-              label="Squad Launch"
-              placeholder="Ready when you are"
-              value="Auto-generated room code"
-              readOnly
-            />
+            <>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-text-secondary">
+                Host setup lives in the next screen. Your room code will be generated after launch.
+              </div>
+              <Button variant="secondary" disabled={!canCreate} onClick={handleCreate}>
+                Start room
+              </Button>
+            </>
           )}
-
-          {tab === "create" ? (
-            <Button variant="secondary" disabled={!canCreate} onClick={handleCreate}>
-              Fire Message
-            </Button>
-          ) : (
-            <p className="text-xs uppercase tracking-[0.08em] text-cyan-100/75">
-              Status: Ready to engage
-            </p>
-          )}
-
-          <div className="grid gap-2 rounded-2xl border border-cyan-300/30 bg-[#0b1330]/90 p-3 text-xs text-cyan-100/75 sm:grid-cols-3">
-            <p>Desktop: full FX stack</p>
-            <p>Tablet: touch-optimized</p>
-            <p>Mobile: compact controls</p>
-          </div>
         </Card>
       </section>
 
-      <section className="grid gap-3 text-center text-xs uppercase tracking-[0.1em] text-cyan-100/70 md:grid-cols-3">
-        <div className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2">
-          Cyan = trust / primary actions
-        </div>
-        <div className="rounded-xl border border-fuchsia-300/30 bg-fuchsia-500/10 px-3 py-2">
-          Magenta = excitement / secondary actions
-        </div>
-        <div className="rounded-xl border border-lime-300/30 bg-lime-500/10 px-3 py-2">
-          Lime = success / live-ready states
-        </div>
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <p className="eyebrow">Visual system</p>
+          <h3 className="text-2xl text-shimmer">Color and motion</h3>
+          <p className="mt-3 text-sm text-text-secondary">Deep black surfaces, cyan/magenta glow, and chunky outlines give the app its arcade identity.</p>
+        </Card>
+        <Card>
+          <p className="eyebrow">Gameplay</p>
+          <h3 className="text-2xl text-shimmer">All core features linked</h3>
+          <p className="mt-3 text-sm text-text-secondary">Join, create, lobby, game, recap, admin controls, and room moderation all flow through the same system.</p>
+        </Card>
+        <Card>
+          <p className="eyebrow">Admin</p>
+          <h3 className="text-2xl text-shimmer">Backend-powered control</h3>
+          <p className="mt-3 text-sm text-text-secondary">Admin login and room control are wired to the server session token flow, not mocked UI.</p>
+        </Card>
       </section>
     </main>
   );

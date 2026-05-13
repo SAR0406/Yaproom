@@ -13,17 +13,18 @@ const steps = [
 export default function HowItWorksPage() {
   return (
     <PageLayout>
-      <section className="flex flex-col gap-4">
-        <h1 className="text-4xl font-bold text-foreground">How Yapzi works</h1>
-        <p className="text-muted">
-          The fastest way to turn a group chat into a party night.
+      <section className="space-y-2">
+        <p className="eyebrow">How it works</p>
+        <h1 className="text-5xl text-shimmer">From room code to chaos</h1>
+        <p className="max-w-2xl text-text-secondary">
+          The flow is intentionally short, loud, and fast so the party stays moving.
         </p>
       </section>
       <section className="grid gap-4 md:grid-cols-3">
         {steps.map((step, index) => (
           <Card key={step}>
-            <p className="text-sm text-muted">Step {index + 1}</p>
-            <h3 className="text-lg font-semibold text-foreground">{step}</h3>
+            <p className="eyebrow">Step {index + 1}</p>
+            <h3 className="text-2xl text-shimmer">{step}</h3>
           </Card>
         ))}
       </section>

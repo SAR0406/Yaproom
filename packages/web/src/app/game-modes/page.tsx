@@ -27,17 +27,19 @@ const modes = [
 export default function GameModesPage() {
   return (
     <PageLayout>
-      <section className="flex flex-col gap-4">
-        <h1 className="text-4xl font-bold text-foreground">Game modes</h1>
-        <p className="text-muted">
-          Five mini-games. One room. Infinite inside jokes.
+      <section className="space-y-2">
+        <p className="eyebrow">Game modes</p>
+        <h1 className="text-5xl text-shimmer">One room, many flavors of chaos</h1>
+        <p className="max-w-2xl text-text-secondary">
+          Each mode pushes a different social pressure point while keeping the same neon-brutal vibe.
         </p>
       </section>
       <section className="grid gap-4 md:grid-cols-2">
         {modes.map((mode) => (
           <Card key={mode.title}>
-            <h3 className="text-lg font-semibold text-foreground">{mode.title}</h3>
-            <p className="mt-2 text-sm text-muted">{mode.description}</p>
+            <p className="eyebrow">Mode</p>
+            <h3 className="text-2xl text-shimmer">{mode.title}</h3>
+            <p className="mt-3 text-sm text-text-secondary">{mode.description}</p>
           </Card>
         ))}
       </section>
