@@ -5,7 +5,10 @@ import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
   title: 'Yaproom — Loud room games, rebuilt',
-  description: 'Neobrutalist multiplayer party games with room control, live play, and bold shared visuals.'
+  description: 'Neobrutalist multiplayer party games with room control, live play, and bold shared visuals.',
+  icons: {
+    icon: '/favicon.ico'
+  }
 };
 
 export default function RootLayout({

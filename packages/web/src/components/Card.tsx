@@ -96,7 +96,7 @@ export function Card({
   );
 
   const classNameValue = cn(
-    "card-game relative overflow-hidden",
+    "card-game card panel card relative overflow-hidden",
     "border backdrop-blur-xl",
     "transition-all duration-300",
     paddingStyles[padding],

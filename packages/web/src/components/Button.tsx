@@ -80,7 +80,7 @@ export function Button({
       whileTap={disabled || loading ? undefined : tapScale}
       className={cn(
         // Base gaming button styles
-        "btn-game relative inline-flex items-center justify-center",
+        "btn-game brutalBtn btn relative inline-flex items-center justify-center",
         "font-display font-bold uppercase tracking-[0.06em]",
         "select-none outline-none",
         "transition-all duration-200",
