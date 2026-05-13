@@ -87,7 +87,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         const currentPlayer = state.players.find((p) => p.id === prev.playerId);
         return {
           roomState: state,
-          players: [...state.players, ...state.spectators],
+          players: state.players,
           currentPlayer: currentPlayer || prev.currentPlayer,
           phase: state.game?.round.phase ?? prev.phase,
         };
