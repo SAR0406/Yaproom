@@ -83,32 +83,8 @@ export function Card({
       }
     : {};
 
-  return (
-    <Component
-      className={cn(
-        // Base card styles
-        "card-game relative overflow-hidden",
-        "border backdrop-blur-xl",
-        "transition-all duration-300",
-        // Variant
-        variantBorders[variant],
-        variantGlows[variant],
-        // Padding
-        paddingStyles[padding],
-        // Interactive
-        interactive && "cursor-pointer",
-        // Highlighted
-        highlighted && [
-          "border-neon-cyan/50",
-          "shadow-[0_0_30px_rgba(0,245,255,0.2),0_0_80px_rgba(0,245,255,0.08)]",
-          "ring-1 ring-neon-cyan/30",
-        ],
-        className,
-      )}
-      onClick={onClick}
-      {...(motionProps as object)}
-      {...(props as HTMLMotionProps<"div">)}
-    >
+  const content = (
+    <>
       {/* Corner accent gradient */}
       {accent && (
         <div
@@ -137,6 +113,42 @@ export function Card({
 
       {/* Content */}
       <div className="relative">{children}</div>
-    </Component>
+    </>
+  );
+
+  const classNameValue = cn(
+    "card-game relative overflow-hidden",
+    "border backdrop-blur-xl",
+    "transition-all duration-300",
+    variantBorders[variant],
+    variantGlows[variant],
+    paddingStyles[padding],
+    interactive && "cursor-pointer",
+    highlighted && [
+      "border-neon-cyan/50",
+      "shadow-[0_0_30px_rgba(0,245,255,0.2),0_0_80px_rgba(0,245,255,0.08)]",
+      "ring-1 ring-neon-cyan/30",
+    ],
+    className,
+  );
+
+  if (interactive) {
+    return (
+      <motion.div
+        className={classNameValue}
+        onClick={onClick}
+        whileHover={hoverLift}
+        whileTap={tapScale}
+        {...(props as HTMLMotionProps<"div">)}
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className={classNameValue} onClick={onClick} {...props}>
+      {content}
+    </div>
   );
 }

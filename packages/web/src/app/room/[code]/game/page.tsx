@@ -280,7 +280,7 @@ export default function GamePage() {
           : Date.now();
         const started = Number.isNaN(parsedStartedAt) ? Date.now() : parsedStartedAt;
         const elapsed = Math.max(0, (Date.now() - started) / 1000);
-        const duration = room.settings.roundLengthSec;
+        const duration = room.settings.roundLengthSec ?? 60;
         const progress = Math.max(0, Math.min(100, 100 - (elapsed / duration) * 100));
 
         return (
