@@ -114,11 +114,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       });
     });
 
-    socket.on('disconnect', () => {
-      set({
-        isConnected: false,
-      });
-    });
+
 
     socket.on('player_left', (data) => {
       set((prev) => ({
