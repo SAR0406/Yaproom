@@ -34,8 +34,8 @@ export function initializeSocket(): Socket<ServerToClientEvents, ClientToServerE
     console.log('[Socket] Disconnected');
   });
 
-  socket.on('error', (error) => {
-    console.error('[Socket] Error:', error);
+  socket.on('room:error', (error) => {
+    console.error('[Socket] Room error:', error);
   });
 
   return socket;
@@ -72,19 +72,32 @@ export function joinRoom(
       return;
     }
 
-    socket.emit(
-      'join_room',
-      { roomCode, playerName, avatarIndex },
-      (error?: string | null, playerId?: string) => {
-        if (error) {
-          reject(new Error(error));
-        } else if (playerId) {
-          resolve(playerId);
-        } else {
-          reject(new Error('No player ID returned'));
-        }
-      }
-    );
+    const handleSync = (payload: { playerId: string }) => {
+      cleanup();
+      resolve(payload.playerId);
+    };
+    const handleError = (payload: { message: string }) => {
+      cleanup();
+      reject(new Error(payload.message));
+    };
+    const cleanup = () => {
+      socket?.off('room:sync', handleSync);
+      socket?.off('reconnect:sync', handleSync);
+      socket?.off('room:error', handleError);
+    };
+
+    socket.on('room:sync', handleSync);
+    socket.on('reconnect:sync', handleSync);
+    socket.on('room:error', handleError);
+
+    const storedPlayerId =
+      typeof window !== 'undefined' ? window.localStorage.getItem('yapzi:playerId') : null;
+
+    socket.emit('room:join', {
+      code: roomCode,
+      nickname: playerName,
+      playerId: storedPlayerId ?? undefined
+    });
   });
 }
 
@@ -98,9 +111,9 @@ export function leaveRoom(reason: string = 'user_left'): Promise<void> {
       return;
     }
 
-    socket.emit('leave_room', { reason }, () => {
-      resolve();
-    });
+    void reason;
+    socket.emit('room:leave');
+    resolve();
   });
 }
 
@@ -118,19 +131,14 @@ export function reconnectToRoom(
       return;
     }
 
-    socket.emit(
-      'reconnect_player',
-      { roomCode, playerId, sessionToken },
-      (error?: string | null, state?: RoomState) => {
-        if (error) {
-          reject(new Error(error));
-        } else if (state) {
-          resolve(state);
-        } else {
-          reject(new Error('No state returned'));
-        }
-      }
-    );
+    void sessionToken;
+    socket.once('room:sync', (payload) => resolve(payload.room));
+    socket.once('room:error', (error) => reject(new Error(error.message)));
+    socket.emit('room:join', {
+      code: roomCode,
+      nickname: 'Reconnecting player',
+      playerId
+    });
   });
 }
 
@@ -139,7 +147,10 @@ export function reconnectToRoom(
  */
 export function readyUp(ready: boolean): void {
   if (!socket) return;
-  socket.emit('ready_up', { ready });
+  const playerId =
+    typeof window !== 'undefined' ? window.localStorage.getItem('yapzi:playerId') : null;
+  if (!playerId) return;
+  socket.emit('room:ready', { playerId, isReady: ready });
 }
 
 /**
@@ -147,7 +158,7 @@ export function readyUp(ready: boolean): void {
  */
 export function startGame(): void {
   if (!socket) return;
-  socket.emit('start_game', {});
+  socket.emit('round:next');
 }
 
 /**
@@ -155,15 +166,15 @@ export function startGame(): void {
  */
 export function nextRound(): void {
   if (!socket) return;
-  socket.emit('next_round', {});
+  socket.emit('round:next');
 }
 
 /**
  * Submit action
  */
 export function submitAction(type: string, payload: any): void {
-  if (!socket) return;
-  socket.emit('submit_action', { type, payload });
+  void type;
+  void payload;
 }
 
 /**
@@ -171,7 +182,11 @@ export function submitAction(type: string, payload: any): void {
  */
 export function submitVote(votedPlayerId: string, reason?: string): void {
   if (!socket) return;
-  socket.emit('submit_vote', { votedPlayerId, reason });
+  void reason;
+  const playerId =
+    typeof window !== 'undefined' ? window.localStorage.getItem('yapzi:playerId') : null;
+  if (!playerId) return;
+  socket.emit('vote:submit', { playerId, targetId: votedPlayerId });
 }
 
 /**
@@ -179,21 +194,15 @@ export function submitVote(votedPlayerId: string, reason?: string): void {
  */
 export function sendReaction(emoji: string): void {
   if (!socket) return;
-  socket.emit('send_reaction', { emoji });
+  const playerId =
+    typeof window !== 'undefined' ? window.localStorage.getItem('yapzi:playerId') : null;
+  if (!playerId) return;
+  socket.emit('reaction:send', { playerId, reaction: emoji });
 }
 
 /**
  * Request state sync
  */
 export function requestStateSync(): Promise<RoomState | undefined> {
-  return new Promise((resolve) => {
-    if (!socket) {
-      resolve(undefined);
-      return;
-    }
-
-    socket.emit('request_state_sync', (state?: RoomState) => {
-      resolve(state);
-    });
-  });
+  return Promise.resolve(undefined);
 }

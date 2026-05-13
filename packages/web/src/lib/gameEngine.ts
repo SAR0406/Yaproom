@@ -12,8 +12,12 @@ export const phaseOrder: GamePhase[] = [
 ];
 
 export const gameModeLabels: Record<GameMode, string> = {
+  undercover: "Undercover",
   imposter: "Imposter",
   drawing: "Cursed Drawing",
+  "drawing-telephone": "Drawing Telephone",
+  quiplash: "Quiplash",
+  codenames: "Codenames",
   expose: "Expose Vote",
   confession: "Confession",
   split: "Split or Steal",
@@ -22,15 +26,21 @@ export const gameModeLabels: Record<GameMode, string> = {
 export function describePhase(phase: GamePhase) {
   const labels: Record<GamePhase, string> = {
     lobby: "Lobby",
+    setup: "Setup",
     instructions: "Instructions",
+    round_start: "Round Start",
     role: "Role",
     action: "Action",
+    player_action: "Player Action",
     timer: "Timer",
+    voting: "Voting",
     vote: "Vote",
     guess: "Guess",
     reveal: "Reveal",
     recap: "Recap",
-    results: "Results",
+    scoring: "Scoring",
+    next_round: "Next Round",
+    match_end: "Match End",
   };
   return labels[phase];
 }

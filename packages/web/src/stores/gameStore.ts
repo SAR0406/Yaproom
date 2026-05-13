@@ -46,46 +46,69 @@ export const useGameStore = create<GameStore>((set, get) => {
     const socket = getSocket();
     if (!socket) return;
 
-    socket.on('connection_established', (data) => {
+    socket.on('room:sync', (payload) => {
       set({
-        playerId: data.playerId,
-        sessionToken: data.sessionToken,
+        playerId: payload.playerId,
+        roomState: payload.room,
+        players: [...payload.room.players, ...payload.room.bannedPlayerIds.map((id) => ({
+          id,
+          nickname: 'Banned',
+          avatarKey: null,
+          color: '#666666',
+          isHost: false,
+          isReady: false,
+          isConnected: false,
+          isMuted: false,
+          isBanned: true,
+          score: 0,
+          lastActiveAt: payload.room.createdAt
+        }))],
+        currentPlayer: payload.room.players.find((p) => p.id === payload.playerId) ?? null,
+        phase: payload.room.game?.round.phase ?? 'lobby',
         isConnected: true,
         isConnecting: false,
       });
     });
 
-    socket.on('room_state_updated', (state) => {
+    socket.on('reconnect:sync', (payload) => {
+      set((prev) => {
+        const currentPlayer = payload.room.players.find((p) => p.id === payload.playerId);
+        return {
+          roomState: payload.room,
+          players: payload.room.players,
+          currentPlayer: currentPlayer || prev.currentPlayer,
+          phase: payload.room.game?.round.phase ?? prev.phase,
+        };
+      });
+    });
+
+    socket.on('room:update', (state) => {
       set((prev) => {
         const currentPlayer = state.players.find((p) => p.id === prev.playerId);
         return {
           roomState: state,
           players: [...state.players, ...state.spectators],
           currentPlayer: currentPlayer || prev.currentPlayer,
-          phase: state.phase,
+          phase: state.game?.round.phase ?? prev.phase,
         };
       });
     });
 
-    socket.on('player_joined', (player) => {
+    socket.on('player:update', (player) => {
       set((prev) => ({
-        players: [...prev.players, player],
+        players: prev.players.some((p) => p.id === player.id)
+          ? prev.players.map((p) => (p.id === player.id ? player : p))
+          : [...prev.players, player],
       }));
     });
 
-    socket.on('player_left', (data) => {
-      set((prev) => ({
-        players: prev.players.filter((p) => p.id !== data.playerId),
-      }));
-    });
-
-    socket.on('phase_changed', (data) => {
+    socket.on('game:phase', (data) => {
       set({
-        phase: data.newPhase,
+        phase: data.phase,
       });
     });
 
-    socket.on('error', (data) => {
+    socket.on('room:error', (data) => {
       set({
         error: data.message,
       });
@@ -95,6 +118,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({
         isConnected: false,
       });
+    });
+
+    socket.on('player_left', (data) => {
+      set((prev) => ({
+        players: prev.players.filter((p) => p.id !== data.playerId),
+      }));
     });
   };
 
@@ -178,42 +207,52 @@ export const useGameStore = create<GameStore>((set, get) => {
     readyUp: (ready: boolean) => {
       const socket = getSocket();
       if (socket) {
-        socket.emit('ready_up', { ready });
+        const playerId = get().playerId;
+        if (playerId) {
+          socket.emit('room:ready', { playerId, isReady: ready });
+        }
       }
     },
 
     startGame: () => {
       const socket = getSocket();
       if (socket) {
-        socket.emit('start_game', {});
+        const mode = get().roomState?.queue[0];
+        if (mode) {
+          socket.emit('game:start', { mode });
+        }
       }
     },
 
     nextRound: () => {
       const socket = getSocket();
       if (socket) {
-        socket.emit('next_round', {});
+        socket.emit('round:next');
       }
     },
 
     submitAction: (type: string, payload: any) => {
-      const socket = getSocket();
-      if (socket) {
-        socket.emit('submit_action', { type, payload });
-      }
+      void type;
+      void payload;
     },
 
     submitVote: (playerId: string) => {
       const socket = getSocket();
       if (socket) {
-        socket.emit('submit_vote', { votedPlayerId: playerId });
+        const voterId = get().playerId;
+        if (voterId) {
+          socket.emit('vote:submit', { playerId: voterId, targetId: playerId });
+        }
       }
     },
 
     sendReaction: (emoji: string) => {
       const socket = getSocket();
       if (socket) {
-        socket.emit('send_reaction', { emoji });
+        const playerId = get().playerId;
+        if (playerId) {
+          socket.emit('reaction:send', { playerId, reaction: emoji });
+        }
       }
     },
 
