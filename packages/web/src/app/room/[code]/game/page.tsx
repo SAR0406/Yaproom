@@ -24,6 +24,7 @@ import {
 } from '@/lib/roomActions';
 import { fetchAiPrompts } from '@/lib/ai';
 import { getSocket } from '@/lib/socket';
+import { getModeBlueprint } from '@/lib/modeCatalog';
 
 const CANVAS_WIDTH = 300;
 const CANVAS_HEIGHT = 200;
@@ -257,6 +258,7 @@ export default function GamePage() {
 
         const phase = room.game.round.phase;
         const isHost = room.players.find((p) => p.id === playerId)?.isHost;
+        const modeBlueprint = getModeBlueprint(room.game.mode);
         const payload = (room.game.round.payload ?? {}) as RoundPayload;
         const imposterId = String(payload.imposterId ?? '');
         const myWord = imposterId && playerId === imposterId ? payload.imposterWord : payload.commonWord;
@@ -410,7 +412,7 @@ export default function GamePage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-semibold text-foreground">Canvas arena</h3>
-                      <p className="text-xs text-muted">The Phaser stage is ready for real sketch gameplay.</p>
+                      <p className="text-xs text-muted">{modeBlueprint.shortPitch}</p>
                     </div>
                     <Button
                       onClick={() =>
@@ -427,7 +429,12 @@ export default function GamePage() {
                       Draw a stroke
                     </Button>
                   </div>
-                  <PhaserStage label="Drawing arena" className="bg-panel" />
+                  <PhaserStage
+                    label={modeBlueprint.title}
+                    subtitle={modeBlueprint.summary}
+                    highlights={modeBlueprint.vibeTags}
+                    className="bg-panel"
+                  />
                 </Card>
               ) : null}
 

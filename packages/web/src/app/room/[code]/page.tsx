@@ -17,7 +17,7 @@ import {
   updateRoomStatus,
   sendChat
 } from '@/lib/roomActions';
-import { gameModeLabels } from '@/lib/gameEngine';
+import { getModeBlueprint } from '@/lib/modeCatalog';
 
 export default function LobbyPage() {
   const playerId = useRoomStore((state) => state.playerId);
@@ -30,6 +30,7 @@ export default function LobbyPage() {
         const player = room.players.find((p) => p.id === playerId);
         const isHost = player?.isHost;
         const firstMode = room.queue[0];
+        const nextModeBlueprint = firstMode ? getModeBlueprint(firstMode) : null;
         const readyCount = room.players.filter((entry) => entry.isReady).length;
 
         return (
@@ -54,6 +55,14 @@ export default function LobbyPage() {
                     }}
                   />
                 </div>
+                {nextModeBlueprint ? (
+                  <div className="rounded-2xl border-[3px] border-black bg-white px-4 py-3 shadow-[4px_4px_0_0_#000]">
+                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-black/60">Next up</p>
+                    <p className="text-lg font-black uppercase text-black">{nextModeBlueprint.title}</p>
+                    <p className="text-sm text-black/80">{nextModeBlueprint.shortPitch}</p>
+                    <p className="mt-2 text-xs font-semibold text-black/60">{nextModeBlueprint.playerRange}</p>
+                  </div>
+                ) : null}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {room.players.map((entry) => (
                     <PlayerChip
@@ -144,7 +153,7 @@ export default function LobbyPage() {
                       {room.status === 'locked' ? 'Unlock room' : 'Lock room'}
                     </Button>
                     <Button disabled={!firstMode} onClick={() => firstMode && startGame(firstMode)}>
-                      Start {firstMode ? gameModeLabels[firstMode] : 'game'}
+                      Start {nextModeBlueprint ? nextModeBlueprint.title : 'game'}
                     </Button>
                   </>
                 ) : null}

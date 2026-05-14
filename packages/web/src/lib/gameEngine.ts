@@ -1,4 +1,5 @@
 import type { GameMode, GamePhase } from "@yapzi/shared";
+import { modeCatalog } from "@/lib/modeCatalog";
 
 export const phaseOrder: GamePhase[] = [
   "instructions",
@@ -11,22 +12,9 @@ export const phaseOrder: GamePhase[] = [
   "recap",
 ];
 
-export const gameModeLabels: Record<GameMode, string> = {
-  undercover: "Undercover",
-  imposter: "Imposter",
-  drawing: "Cursed Drawing",
-  "drawing-telephone": "Drawing Telephone",
-  quiplash: "Quiplash",
-  codenames: "Codenames",
-  expose: "Expose Vote",
-  confession: "Confession",
-  split: "Split or Steal",
-  "truth-or-dare": "Truth or Dare",
-  "would-you-rather": "Would You Rather",
-  "never-have-i-ever": "Never Have I Ever",
-  "whos-most-likely": "Who's Most Likely To",
-  "guess-who-said-it": "Guess Who Said It",
-};
+export const gameModeLabels = Object.fromEntries(
+  modeCatalog.map((entry) => [entry.mode, entry.title])
+) as Record<GameMode, string>;
 
 export function describePhase(phase: GamePhase) {
   const labels: Record<GamePhase, string> = {
