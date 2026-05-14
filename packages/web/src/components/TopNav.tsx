@@ -26,7 +26,8 @@ export function TopNav() {
   }, []);
 
   return (
-    <aside className="brutal-sidebar brutal-panel">
+    <>
+      <aside className="brutal-sidebar brutal-panel brutal-desktop-nav">
       <div className="brutal-brand">
         <div className="brutal-badge">YAP</div>
         <div>
@@ -60,6 +61,41 @@ export function TopNav() {
         <div className="brutal-clock">{clock}</div>
         <div className="brutal-subtle">Unified frontend visual shell</div>
       </div>
-    </aside>
+      </aside>
+
+      <header className="brutal-mobile-nav brutal-panel">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="brutal-badge">YAP</div>
+            <div>
+              <h1>YAPROOM</h1>
+              <p>Mobile room launcher</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="brutal-small-label">LIVE CLOCK</p>
+            <div className="brutal-clock brutal-mobile-clock">{clock}</div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <span className="brutal-chip cyan">LIVE</span>
+          <span className="brutal-chip dark">SYNC</span>
+          <span className="brutal-chip">ROOMS</span>
+        </div>
+
+        <nav className="brutal-mobile-nav-links">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(pathname === item.href && "active")}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </header>
+    </>
   );
 }

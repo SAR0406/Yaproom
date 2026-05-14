@@ -42,7 +42,7 @@ export function RoomLayout({
   return (
     <RoomGuard>
       {(room) => (
-        <div className="brutal-shell game-scene">
+        <div className="brutal-shell game-scene room-shell">
           <TopNav />
           <main className="brutal-main game-main">
             <header className="brutal-topbar brutal-panel room-hero">
