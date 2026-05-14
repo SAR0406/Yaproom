@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import type { VoteSubmitPayload, VoiceSignalPayload } from '@yapzi/shared';
 import { RoomLayout } from '@/components/RoomLayout';
 import { Card } from '@/components/Card';
-import { PromptCard } from '@/components/PromptCard';
 import { TimerRing } from '@/components/TimerRing';
 import { VoteGrid } from '@/components/VoteGrid';
 import { GameReveal } from '@/components/GameReveal';
 import { ChaosOverlay } from '@/components/ChaosOverlay';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { GameModeHUD } from '@/components/GameModeHUD';
+import { PhaserStage } from '@/components/PhaserStage';
 import { useRoomStore } from '@/stores/roomStore';
 import {
   nextRound,
@@ -21,7 +22,6 @@ import {
   submitGuess,
   submitVote
 } from '@/lib/roomActions';
-import { describePhase, gameModeLabels } from '@/lib/gameEngine';
 import { fetchAiPrompts } from '@/lib/ai';
 import { getSocket } from '@/lib/socket';
 
@@ -286,14 +286,7 @@ export default function GamePage() {
         return (
           <div className="gameplay-grid">
             <div className="mission-column space-y-4">
-              <PromptCard className="hud-card mission-brief">
-                <h2 className="text-2xl font-bold text-foreground">
-                  {gameModeLabels[room.game.mode]} — {describePhase(phase)}
-                </h2>
-                <p className="mt-2 text-sm text-muted">
-                  Prompt: {room.game.round.prompt ?? 'Stay chaotic.'}
-                </p>
-              </PromptCard>
+              <GameModeHUD room={room} />
 
               {phase === 'role' && room.game.mode === 'imposter' ? (
                 <Card className="hud-card role-panel">
@@ -413,22 +406,28 @@ export default function GamePage() {
               ) : null}
 
               {phase === 'action' && room.game.mode === 'drawing' ? (
-                <Card className="space-y-3 hud-card action-panel">
-                  <h3 className="text-lg font-semibold text-foreground">Quick sketch action</h3>
-                  <Button
-                    onClick={() =>
-                      playerId &&
-                      sendDrawPath({
-                        playerId,
-                        path: [
-                          { x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT },
-                          { x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT }
-                        ]
-                      })
-                    }
-                  >
-                    Draw a stroke
-                  </Button>
+                <Card className="space-y-4 hud-card action-panel">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">Canvas arena</h3>
+                      <p className="text-xs text-muted">The Phaser stage is ready for real sketch gameplay.</p>
+                    </div>
+                    <Button
+                      onClick={() =>
+                        playerId &&
+                        sendDrawPath({
+                          playerId,
+                          path: [
+                            { x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT },
+                            { x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT }
+                          ]
+                        })
+                      }
+                    >
+                      Draw a stroke
+                    </Button>
+                  </div>
+                  <PhaserStage label="Drawing arena" className="bg-panel" />
                 </Card>
               ) : null}
 
